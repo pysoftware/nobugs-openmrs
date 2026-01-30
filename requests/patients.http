@@ -1,0 +1,195 @@
+### Поиск пациентов по имени (Name - имя пациента)
+GET http://localhost/openmrs/ws/rest/v1/patient?q=Name
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+### Поиск пациентов по uuid
+GET http://localhost/openmrs/ws/rest/v1/patient/a3189895-6f41-4f90-8095-519a8114841f
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+### Создание пациента
+POST http://localhost/openmrs/ws/rest/v1/patient
+Content-Type: application/json
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+{
+   "identifiers":[
+      {
+         "identifier":"103VWY7",
+         "identifierType":"05a29f94-c0ed-11e2-94be-8c13b969e334",
+         "location":"8d6c993e-c2cc-11de-8d13-0010c6dffd0f",
+         "preferred":true
+      }
+   ],
+   "person":{
+      "gender":"M",
+      "age":47,
+      "birthdate":"1970-01-01T00:00:00.000+0100",
+      "birthdateEstimated":false,
+      "dead":false,
+      "deathDate":null,
+      "causeOfDeath":null,
+      "names":[
+         {
+            "givenName":"Thomas",
+            "familyName":"Smith"
+         }
+      ],
+      "addresses": [
+        {
+        "address1": "30, Vivekananda Layout, Munnekolal,Marathahalli",
+        "cityVillage": "Bengaluru",
+        "country": "India",
+        "postalCode": "560037"
+        }
+      ]
+    }
+}
+
+### Создайте пациента на основе существующего Person
+POST http://localhost/openmrs/ws/rest/v1/patient
+Content-Type: application/json
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+{
+    "person": "a3189895-6f41-4f90-8095-519a8114841f",
+    "identifiers": [
+        {
+            "identifier": "1003EY",
+            "identifierType": "05a29f94-c0ed-11e2-94be-8c13b969e334",
+            "location": "8d6c993e-c2cc-11de-8d13-0010c6dffd0f",
+            "preferred": false
+        }
+    ]
+}
+
+### Обновить запись о пациенте
+POST http://localhost/openmrs/ws/rest/v1/patient/05a29f94-c0ed-11e2-94be-8c13b969e334
+Content-Type: application/json
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+{
+  "identifier": "1003EY",
+  "identifierType": "05a29f94-c0ed-11e2-94be-8c13b969e334",
+  "location": "8d6c993e-c2cc-11de-8d13-0010c6dffd0f",
+  "preferred": false
+}
+
+### Удаление пациента
+DELETE http://localhost/openmrs/ws/rest/v1/patient/05a29f94-c0ed-11e2-94be-8c13b969e334?purge=true
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+### Список вложенных ресурсов patientIdentifier
+GET http://localhost/openmrs/ws/rest/v1/patient/082bfa3d-da87-40f8-a04f-3c5b512e8449/identifier
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+
+### Cписок дочерних ресурсов patientIdentifier по их UUID и UUID родительского пациента
+GET http://localhost/openmrs/ws/rest/v1/patient/a3189895-6f41-4f90-8095-519a8114841f/identifier/0bfba77e-e6bb-442e-ad32-9f001aa3204c
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+### Создать вложенный ресурс patientIdentifier со свойствами
+POST http://localhost/openmrs/ws/rest/v1/patient/082bfa3d-da87-40f8-a04f-3c5b512e8449/identifier
+Content-Type: application/json
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+{
+    "identifier" : "111:CLINIC1",
+    "identifierType" : "a5d38e09-efcb-4d91-a526-50ce1ba5011a",
+    "location" : "8d6c993e-c2cc-11de-8d13-0010c6dffd0f",
+    "preferred" : true
+}
+
+### Обновить вложенный ресурс patientIdentifier
+POST http://localhost/openmrs/ws/rest/v1/patient/a3189895-6f41-4f90-8095-519a8114841f/identifier/0bfba77e-e6bb-442e-ad32-9f001aa3204c
+Content-Type: application/json
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+{
+    "identifier" : "111:CLINIC2",
+}
+
+### Удалить вложенный ресурс patientIdentifier
+DELETE http://localhost/openmrs/ws/rest/v1/patient/a3189895-6f41-4f90-8095-519a8114841f/identifier/0bfba77e-e6bb-442e-ad32-9f001aa3204c
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+### Список вложенных ресурсов allergy
+GET http://localhost/openmrs/ws/rest/v1/patient/a3189895-6f41-4f90-8095-519a8114841f/allergy/
+
+### Создать вложенный ресурс allergy со свойствами
+POST http://localhost/openmrs/ws/rest/v1patient/a3189895-6f41-4f90-8095-519a8114841f/allergy
+Content-Type: application/json
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+{
+    "allergen": {
+        "allergenType": "DRUG",
+        "codedAllergen": {
+            "uuid": "162298AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        }
+    },
+    "severity": {
+        "uuid": "1500AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "comment": "severe allergy",
+    "reactions": [
+        {
+            "reaction": {
+                "uuid": "1067AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            }
+        },
+        {
+            "reaction": {
+                "uuid": "139084AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            }
+        }
+    ]
+}
+
+### Обновить вложенный ресурс allergy
+POST http://localhost/openmrs/ws/rest/v1patient/a3189895-6f41-4f90-8095-519a8114841f/allergy/a122f3ce-4039-4f8c-9d6f-3faf64c7cb69
+Content-Type: application/json
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
+{
+    "allergen": {
+        "allergenType": "DRUG",
+        "codedAllergen": {
+            "uuid": "162298AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        }
+    },
+    "severity": {
+        "uuid": "1500AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "comment": "severe allergy",
+    "reactions": [
+        {
+            "reaction": {
+                "uuid": "1067AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            }
+        },
+        {
+            "reaction": {
+                "uuid": "139084AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            }
+        }
+    ]
+}
+
+### Удалить вложенный ресурс allergy
+DELETE http://localhost/openmrs/ws/rest/v1/patient/a3189895-6f41-4f90-8095-519a8114841f/allergy/a122f3ce-4039-4f8c-9d6f-3faf64c7cb69
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
