@@ -1,14 +1,16 @@
-### Поиск пациентов по имени (Name - имя пациента)
+### Поиск пациентов по имени (Name - имя пациента) : Possitive  200 OK
 GET http://localhost/openmrs/ws/rest/v1/patient?q=Name
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### Поиск пациентов по uuid
+### Поиск пациентов по uuid : Possitive  200 OK
+### Поиск пациентов по uuid : Negative :  404 Not Found
 GET http://localhost/openmrs/ws/rest/v1/patient/a3189895-6f41-4f90-8095-519a8114841f
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### Создание пациента
+### Создание пациента : Possitive 201 Created
+### Создание пациента : Negative 400 Bad Request - одно из значений некорректное, например identifier = ""
 POST http://localhost/openmrs/ws/rest/v1/patient
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
@@ -48,7 +50,8 @@ Accept: application/json
     }
 }
 
-### Создайте пациента на основе существующего Person
+### Создайте пациента на основе существующего Person : Possitive : 201 Created
+### Создание пациента : Negative 400 Bad Request - одно из значений некорректное, например identifier = ""
 POST http://localhost/openmrs/ws/rest/v1/patient
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
@@ -66,7 +69,7 @@ Accept: application/json
     ]
 }
 
-### Обновить запись о пациенте
+### Обновить запись о пациенте : Possitive  200 OK
 POST http://localhost/openmrs/ws/rest/v1/patient/05a29f94-c0ed-11e2-94be-8c13b969e334
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
@@ -79,23 +82,26 @@ Accept: application/json
   "preferred": false
 }
 
-### Удаление пациента
+### Удаление пациента : Positive 204 No Conten
 DELETE http://localhost/openmrs/ws/rest/v1/patient/05a29f94-c0ed-11e2-94be-8c13b969e334?purge=true
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### Список вложенных ресурсов patientIdentifier
+### Список вложенных ресурсов patientIdentifier : Possitive  200 OK
+### Список вложенных ресурсов patientIdentifier : Negative  404 Not Found
 GET http://localhost/openmrs/ws/rest/v1/patient/082bfa3d-da87-40f8-a04f-3c5b512e8449/identifier
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
 
-### Cписок дочерних ресурсов patientIdentifier по их UUID и UUID родительского пациента
+### Cписок дочерних ресурсов patientIdentifier по их UUID и UUID родительского пациента : Possitive  200 OK
+### Cписок дочерних ресурсов patientIdentifier по их UUID и UUID родительского пациента : Negative  404 Not Found
 GET http://localhost/openmrs/ws/rest/v1/patient/a3189895-6f41-4f90-8095-519a8114841f/identifier/0bfba77e-e6bb-442e-ad32-9f001aa3204c
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### Создать вложенный ресурс patientIdentifier со свойствами
+### Создать вложенный ресурс patientIdentifier со свойствами : Possitive 201 Created
+### Создать вложенный ресурс patientIdentifier со свойствами : 400 Bad Request - одно из значений некорректное, например identifier = ""
 POST http://localhost/openmrs/ws/rest/v1/patient/082bfa3d-da87-40f8-a04f-3c5b512e8449/identifier
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
@@ -108,25 +114,32 @@ Accept: application/json
     "preferred" : true
 }
 
-### Обновить вложенный ресурс patientIdentifier
+### Обновить вложенный ресурс patientIdentifier : Possitive 201 Created
+### Обновить вложенный ресурс patientIdentifier : 400 Bad Request - одно из значений некорректное, например identifier = ""
+### Обновить вложенный ресурс patientIdentifier : 404 Not Found  - если не найден пациент по индификатору, те ввести значение по которому не найдется ничего
 POST http://localhost/openmrs/ws/rest/v1/patient/a3189895-6f41-4f90-8095-519a8114841f/identifier/0bfba77e-e6bb-442e-ad32-9f001aa3204c
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
 {
-    "identifier" : "111:CLINIC2",
+  "identifier" : "111:CLINIC1",
+  "identifierType" : "a5d38e09-efcb-4d91-a526-50ce1ba5011a",
+  "location" : "8d6c993e-c2cc-11de-8d13-0010c6dffd0f",
+  "preferred" : true
 }
 
-### Удалить вложенный ресурс patientIdentifier
+### Удалить вложенный ресурс patientIdentifier : Positive 204 No Conten
 DELETE http://localhost/openmrs/ws/rest/v1/patient/a3189895-6f41-4f90-8095-519a8114841f/identifier/0bfba77e-e6bb-442e-ad32-9f001aa3204c
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
-### Список вложенных ресурсов allergy
+### Список вложенных ресурсов allergy : Possitive  200 OK
+### Список вложенных ресурсов allergy : Negative  404 Not Found
 GET http://localhost/openmrs/ws/rest/v1/patient/a3189895-6f41-4f90-8095-519a8114841f/allergy/
 
-### Создать вложенный ресурс allergy со свойствами
+### Создать вложенный ресурс allergy со свойствами : Possitive 201 Created
+### Создать вложенный ресурс allergy со свойствами  : 400 Bad Request
 POST http://localhost/openmrs/ws/rest/v1patient/a3189895-6f41-4f90-8095-519a8114841f/allergy
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
@@ -157,7 +170,8 @@ Accept: application/json
     ]
 }
 
-### Обновить вложенный ресурс allergy
+### Обновить вложенный ресурс allergy : Possitive 201 Created
+### Обновить вложенный ресурс allergy : 400 Bad Request
 POST http://localhost/openmrs/ws/rest/v1patient/a3189895-6f41-4f90-8095-519a8114841f/allergy/a122f3ce-4039-4f8c-9d6f-3faf64c7cb69
 Content-Type: application/json
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
@@ -188,7 +202,7 @@ Accept: application/json
     ]
 }
 
-### Удалить вложенный ресурс allergy
+### Удалить вложенный ресурс allergy : Positive 204 No Conten
 DELETE http://localhost/openmrs/ws/rest/v1/patient/a3189895-6f41-4f90-8095-519a8114841f/allergy/a122f3ce-4039-4f8c-9d6f-3faf64c7cb69
 Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
