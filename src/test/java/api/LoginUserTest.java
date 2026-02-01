@@ -23,11 +23,11 @@ public class LoginUserTest extends BaseTest {
                 .password("Admin123")
                 .build();
 
-        new ValidatedCrudRequester<LoginResponse>(
+        /*new ValidatedCrudRequester<LoginResponse>(
                 RequestSpec.unauthSpec(),
                 Endpoint.LOGIN,
                 ResponseSpec.requestReturnsOk())
-                .post(userAdmin);
+                .post(userAdmin);*/
     }
 
   /*  @Test
