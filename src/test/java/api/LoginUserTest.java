@@ -1,33 +1,25 @@
 package api;
 
 
-import api.models.LoginRequest;
 import api.models.LoginResponse;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import api.requests.skelethon.Endpoint;
-import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
-import api.requests.steps.AdminSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 @Tag("api")
 @Tag("iteration-1")
 public class LoginUserTest extends BaseTest {
 
     @Test
-    public void adminCanGenerateAuthTokenTest() {
-        LoginRequest userAdmin = LoginRequest.builder()
-                .name("admin")
-                .password("Admin123")
-                .build();
+    public void adminCanLoginTest() {
 
-        /*new ValidatedCrudRequester<LoginResponse>(
-                RequestSpec.unauthSpec(),
+        new ValidatedCrudRequester<LoginResponse>(
+                RequestSpec.adminSpec(),
                 Endpoint.LOGIN,
                 ResponseSpec.requestReturnsOk())
-                .post(userAdmin);*/
+                .get();
     }
 
   /*  @Test

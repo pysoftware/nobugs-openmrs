@@ -6,19 +6,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class LoginResponse extends BaseModel{
-    String uuid;
-    String display;
-    String username;
-    String systemId;
-    Map<String, String> userProperties;
-    PersonSummary person;
-    List<Role> roles;
-    List<Privilege> privileges;
+    private boolean authenticated;
+    private String locale;
+    private List<String> allowedLocales;
+    private Object user;
+    private Object sessionLocation;
+    private Object currentProvider;
+
 }
