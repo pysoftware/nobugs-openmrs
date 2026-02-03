@@ -8,8 +8,8 @@ import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+
 @Tag("api")
-@Tag("iteration-1")
 public class LoginUserTest extends BaseTest {
 
     @Test

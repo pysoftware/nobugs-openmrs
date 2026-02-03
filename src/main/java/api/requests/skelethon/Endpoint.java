@@ -12,6 +12,12 @@ public enum Endpoint {
             "/session",
             LoginRequest.class,
             LoginResponse.class
+    ),
+
+    PERSON(
+            "/person",
+            PersonCreateRequest.class,
+            PersonResponse.class
     );
 
     private final String url;

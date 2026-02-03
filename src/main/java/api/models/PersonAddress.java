@@ -13,5 +13,5 @@ public class PersonAddress extends BaseModel {
     private String address1;
     private String cityVillage;
     private String country;
-    private int postalCode;
+    private String postalCode;
 }

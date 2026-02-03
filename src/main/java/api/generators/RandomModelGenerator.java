@@ -8,6 +8,9 @@ import api.generators.annotations.Optional;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 public class RandomModelGenerator {
@@ -115,6 +118,45 @@ public class RandomModelGenerator {
 
     private static Object generateRandomValue(Field field) {
         Class<?> type = field.getType();
+        if (type.equals(List.class)) {
+            Type genericType = field.getGenericType();
+            if (genericType instanceof ParameterizedType pt) {
+                Type itemType = pt.getActualTypeArguments()[0];
+                if (itemType instanceof Class<?> itemClass) {
+                    int count = random.nextInt(3) + 1; // 1–3 элемента, например
+                    List<Object> list = new ArrayList<>();
+                    for (int i = 0; i < count; i++) {
+                        list.add(generate(itemClass));   // рекурсивно генерируем объект
+                    }
+                    return list;
+                }
+            }
+            return Collections.emptyList();
+        }
+
+        if (type.equals(LocalDate.class) || type.equals(LocalDateTime.class)) {
+            int yearsAgo = 18 + random.nextInt(73);
+            int extraDays = random.nextInt(366);
+            LocalDate date = LocalDate.now().minusYears(yearsAgo).minusDays(extraDays);
+
+            if (type.equals(LocalDate.class)) {
+                return date;
+            } else {
+                // Для LocalDateTime возвращаем объект, а не строку
+                return date.atStartOfDay();   // 00:00:00
+            }
+        }
+
+        if (type.equals(String.class) && field.getName().equalsIgnoreCase("gender")) {
+            String[] options = {"M", "F", "O"};
+            return options[random.nextInt(options.length)];
+        }
+
+        if (field.getName().toLowerCase().contains("postal")) {
+            // Пример: 5-значный американский / европейский формат
+            return String.format("%05d", 10000 + random.nextInt(90000));
+        }
+
         if (type.equals(String.class)) {
             return UUID.randomUUID().toString().substring(0, 8);
         } else if (type.equals(Integer.class) || type.equals(int.class)) {
@@ -127,8 +169,6 @@ public class RandomModelGenerator {
             return random.nextFloat() * 100;
         } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
             return random.nextBoolean();
-        } else if (type.equals(List.class)) {
-            return generateRandomList(field);
         } else if (type.equals(Date.class)) {
             return new Date(System.currentTimeMillis() - random.nextInt(1000000000));
         } else {

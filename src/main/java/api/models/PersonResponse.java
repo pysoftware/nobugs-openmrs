@@ -19,7 +19,7 @@ public class PersonResponse extends BaseModel {
     private String display;
     private String gender;
     private Integer age;
-    private LocalDateTime birthdate;
+    private String birthdate;
     private Boolean birthdateEstimated;
     private Boolean dead;
     private Boolean deathDate;
