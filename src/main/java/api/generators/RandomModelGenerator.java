@@ -1,5 +1,6 @@
 package api.generators;
 
+import api.models.enums.Gender;
 import com.github.curiousoddman.rgxgen.RgxGen;
 import api.generators.annotations.GeneratingDoubleRule;
 import api.generators.annotations.GeneratingStringRule;
@@ -10,7 +11,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 
 public class RandomModelGenerator {
@@ -118,62 +118,26 @@ public class RandomModelGenerator {
 
     private static Object generateRandomValue(Field field) {
         Class<?> type = field.getType();
-        if (type.equals(List.class)) {
-            Type genericType = field.getGenericType();
-            if (genericType instanceof ParameterizedType pt) {
-                Type itemType = pt.getActualTypeArguments()[0];
-                if (itemType instanceof Class<?> itemClass) {
-                    int count = random.nextInt(3) + 1; // 1–3 элемента, например
-                    List<Object> list = new ArrayList<>();
-                    for (int i = 0; i < count; i++) {
-                        list.add(generate(itemClass));   // рекурсивно генерируем объект
-                    }
-                    return list;
+
+        return switch (type) {
+            case Class<?> c when c.equals(List.class) -> generateList(field);
+            case Class<?> c when c.equals(LocalDate.class) -> generateBirthDate();
+            case Class<?> c when c.equals(LocalDateTime.class) -> generateBirthDateTime();
+            case Class<?> c when c.equals(Gender.class) -> randomEnum(Gender.class);
+            case Class<?> c when c.equals(String.class) -> {
+                if (field.getName().toLowerCase().contains("postal")) {
+                    yield String.format("%05d", 10000 + random.nextInt(90000));
                 }
+                yield UUID.randomUUID().toString().substring(0, 8);
             }
-            return Collections.emptyList();
-        }
-
-        if (type.equals(LocalDate.class) || type.equals(LocalDateTime.class)) {
-            int yearsAgo = 18 + random.nextInt(73);
-            int extraDays = random.nextInt(366);
-            LocalDate date = LocalDate.now().minusYears(yearsAgo).minusDays(extraDays);
-
-            if (type.equals(LocalDate.class)) {
-                return date;
-            } else {
-                // Для LocalDateTime возвращаем объект, а не строку
-                return date.atStartOfDay();   // 00:00:00
-            }
-        }
-
-        if (type.equals(String.class) && field.getName().equalsIgnoreCase("gender")) {
-            String[] options = {"M", "F", "O"};
-            return options[random.nextInt(options.length)];
-        }
-
-        if (field.getName().toLowerCase().contains("postal")) {
-            // Пример: 5-значный американский / европейский формат
-            return String.format("%05d", 10000 + random.nextInt(90000));
-        }
-
-        if (type.equals(String.class)) {
-            return UUID.randomUUID().toString().substring(0, 8);
-        } else if (type.equals(Integer.class) || type.equals(int.class)) {
-            return random.nextInt(1000);
-        } else if (type.equals(Long.class) || type.equals(long.class)) {
-            return random.nextLong();
-        } else if (type.equals(Double.class) || type.equals(double.class)) {
-            return random.nextDouble() * 100;
-        } else if (type.equals(Float.class) || type.equals(float.class)) {
-            return random.nextFloat() * 100;
-        } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
-            return random.nextBoolean();
-        } else if (type.equals(Date.class)) {
-            return new Date(System.currentTimeMillis() - random.nextInt(1000000000));
-        } else {
-            return generate(type); // вложенный объект
-        }
+            case Class<?> c when c.equals(Integer.class) || c.equals(int.class) -> random.nextInt(1000);
+            case Class<?> c when c.equals(Long.class) || c.equals(long.class) -> random.nextLong();
+            case Class<?> c when c.equals(Double.class) || c.equals(double.class) -> random.nextDouble() * 100;
+            case Class<?> c when c.equals(Float.class) || c.equals(float.class) -> random.nextFloat() * 100;
+            case Class<?> c when c.equals(Boolean.class) || c.equals(boolean.class) -> random.nextBoolean();
+            case Class<?> c when c.equals(Date.class) -> new Date(System.currentTimeMillis() - random.nextInt(1000000000));
+            default -> generate(type);
+        };
     }
 
     private static Object generateFromRegex(String regex, Class<?> type) {
@@ -201,5 +165,39 @@ public class RandomModelGenerator {
             );
         }
         return Collections.emptyList();
+    }
+
+    private static List<Object> generateList(Field field) {
+        Type genericType = field.getGenericType();
+        if (genericType instanceof ParameterizedType pt) {
+            Type itemType = pt.getActualTypeArguments()[0];
+            if (itemType instanceof Class<?> itemClass) {
+                int count = random.nextInt(3) + 1; // 1–3 элемента
+                List<Object> list = new ArrayList<>();
+                for (int i = 0; i < count; i++) {
+                    list.add(generate(itemClass));
+                }
+                return list;
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    private static LocalDate generateBirthDate() {
+        int yearsAgo = random.nextInt(101);          // 0..100 включительно
+        int extraDays = random.nextInt(366);
+
+        return LocalDate.now()
+                .minusYears(yearsAgo)
+                .minusDays(extraDays);
+    }
+
+    private static LocalDateTime generateBirthDateTime() {
+        return generateBirthDate().atStartOfDay();   // 00:00:00
+    }
+
+    private static <E extends Enum<E>> E randomEnum(Class<E> enumClass) {
+        E[] values = enumClass.getEnumConstants();
+        return values[random.nextInt(values.length)];
     }
 }
