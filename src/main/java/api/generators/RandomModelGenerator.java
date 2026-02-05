@@ -11,6 +11,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class RandomModelGenerator {
@@ -121,12 +123,13 @@ public class RandomModelGenerator {
 
         return switch (type) {
             case Class<?> c when c.equals(List.class) -> generateList(field);
-            case Class<?> c when c.equals(LocalDate.class) -> generateBirthDate();
-            case Class<?> c when c.equals(LocalDateTime.class) -> generateBirthDateTime();
             case Class<?> c when c.equals(Gender.class) -> randomEnum(Gender.class);
             case Class<?> c when c.equals(String.class) -> {
                 if (field.getName().toLowerCase().contains("postal")) {
                     yield String.format("%05d", 10000 + random.nextInt(90000));
+                }
+                if (field.getName().toLowerCase().contains("birthdate")) {
+                    yield generateBirthDateString();
                 }
                 yield UUID.randomUUID().toString().substring(0, 8);
             }
@@ -183,17 +186,17 @@ public class RandomModelGenerator {
         return Collections.emptyList();
     }
 
-    private static LocalDate generateBirthDate() {
-        int yearsAgo = random.nextInt(101);          // 0..100 включительно
+    private static String generateBirthDateString() {
+        int yearsAgo = random.nextInt(101);  // 0–100 лет
         int extraDays = random.nextInt(366);
 
-        return LocalDate.now()
+        LocalDate date = LocalDate.now()
                 .minusYears(yearsAgo)
                 .minusDays(extraDays);
-    }
 
-    private static LocalDateTime generateBirthDateTime() {
-        return generateBirthDate().atStartOfDay();   // 00:00:00
+        return date.atStartOfDay(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
+        // → "2003-05-08T00:00:00.000+0000"
     }
 
     private static <E extends Enum<E>> E randomEnum(Class<E> enumClass) {

@@ -16,6 +16,6 @@ import java.util.List;
 public class PersonCreateRequest extends BaseModel {
     private List<PersonName> names;
     private Gender gender;
-    private LocalDateTime birthdate;
+    private String birthdate;
     private List<PersonAddress> addresses;
 }
