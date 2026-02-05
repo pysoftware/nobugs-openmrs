@@ -25,6 +25,6 @@ public class CreatePersonTest extends BaseTest {
                 ResponseSpec.entityWasCreatad())
                 .post(user1);
 
-        //ModelAssertions.assertThatModels(user1,actualUser).match();
+        ModelAssertions.assertThatModels(user1,personCreateRequest).match();
     }
 }
