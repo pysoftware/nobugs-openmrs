@@ -24,6 +24,11 @@ public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest imp
     }
 
     @Override
+    public T get(String uuid) {
+        return(T) crudRequester.get(uuid).extract().as(endpoint.getResponseModel());
+    }
+
+    @Override
     public T get() {
         return(T) crudRequester.get().extract().as(endpoint.getResponseModel());
     }

@@ -15,4 +15,6 @@ public class PreferredName extends BaseModel {
     private String uuid;
     private String display;
     private List<Link> links;
+    private String givenName;       // ← добавь
+    private String familyName;
 }
