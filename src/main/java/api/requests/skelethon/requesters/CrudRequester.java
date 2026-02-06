@@ -33,6 +33,17 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
     }
 
     @Override
+    public ValidatableResponse get(String uuid) {
+
+        return given()
+                .spec(requestSpecification)
+                .get(endpoint.getUrl()+"/"+uuid)
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
+    }
+
+    @Override
     public ValidatableResponse get() {
 
         return given()

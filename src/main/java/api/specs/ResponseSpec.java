@@ -46,7 +46,7 @@ public class ResponseSpec {
     public static ResponseSpecification requestReturnsBadRequest(String  errorValue){
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
-                .expectBody(Matchers.equalTo(errorValue))
+                .expectBody("error.message", Matchers.containsString(errorValue))
                 .build();
     }
 

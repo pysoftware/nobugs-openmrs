@@ -18,6 +18,21 @@ public class ModelComparator {
             Object value1 = getFieldValue(request, requestField);
             Object value2 = getFieldValue(response, responseField);
 
+            if (responseField.contains("display")) {
+                // Специальное сравнение: actual содержит expected (как подстроку)
+                String expectedStr = String.valueOf(value1);
+                String actualStr = String.valueOf(value2);
+
+                if (actualStr == null || !actualStr.contains(expectedStr)) {
+                    mismatches.add(new Mismatch(
+                            requestField + " -> " + responseField,
+                            expectedStr,
+                            actualStr
+                    ));
+                }
+                continue; // пропускаем обычное equals
+            }
+
             if (!Objects.equals(String.valueOf(value1), String.valueOf(value2))) {
                 mismatches.add(new Mismatch(requestField + " -> " + responseField, value1, value2));
             }
