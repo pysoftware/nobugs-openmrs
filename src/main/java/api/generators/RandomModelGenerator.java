@@ -1,17 +1,16 @@
 package api.generators;
 
-import api.models.enums.Gender;
-import com.github.curiousoddman.rgxgen.RgxGen;
 import api.generators.annotations.GeneratingDoubleRule;
 import api.generators.annotations.GeneratingStringRule;
 import api.generators.annotations.Optional;
-import common.annotations.DateFormat;
+import api.models.enums.Gender;
+import com.github.curiousoddman.rgxgen.RgxGen;
+import api.generators.annotations.DateFormat;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -130,7 +129,7 @@ public class RandomModelGenerator {
                     yield String.format("%05d", 10000 + random.nextInt(90000));
                 }
                 if (field.getAnnotation(DateFormat.class) != null) {
-                    yield generateDateString();
+                    yield generateDateString(field.getAnnotation(DateFormat.class).pattern());
                 }
                 yield UUID.randomUUID().toString().substring(0, 8);
             }
@@ -187,7 +186,7 @@ public class RandomModelGenerator {
         return Collections.emptyList();
     }
 
-    private static String generateDateString() {
+    private static String generateDateString(String pattern) {
         int yearsAgo = random.nextInt(101);  // 0–100 лет
         int extraDays = random.nextInt(366);
 
@@ -196,8 +195,8 @@ public class RandomModelGenerator {
                 .minusDays(extraDays);
 
         return date.atStartOfDay(ZoneOffset.UTC)
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
-        // → "2003-05-08T00:00:00.000+0000"
+                .format(DateTimeFormatter.ofPattern(pattern));
+        // → по умолчанию формат "yyyy-MM-dd'T'HH:mm:ss.SSSZ" - "2003-05-08T00:00:00.000+0000"
     }
 
     private static <E extends Enum<E>> E randomEnum(Class<E> enumClass) {
