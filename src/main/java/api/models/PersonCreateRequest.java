@@ -1,6 +1,7 @@
 package api.models;
 
 import api.models.enums.Gender;
+import common.annotations.DateFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,7 @@ import java.util.List;
 public class PersonCreateRequest extends BaseModel {
     private List<PersonName> names;
     private Gender gender;
+    @DateFormat
     private String birthdate;
     private List<PersonAddress> addresses;
 }
