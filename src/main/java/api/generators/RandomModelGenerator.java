@@ -5,6 +5,7 @@ import com.github.curiousoddman.rgxgen.RgxGen;
 import api.generators.annotations.GeneratingDoubleRule;
 import api.generators.annotations.GeneratingStringRule;
 import api.generators.annotations.Optional;
+import common.annotations.DateFormat;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -128,8 +129,8 @@ public class RandomModelGenerator {
                 if (field.getName().toLowerCase().contains("postal")) {
                     yield String.format("%05d", 10000 + random.nextInt(90000));
                 }
-                if (field.getName().toLowerCase().contains("birthdate")) {
-                    yield generateBirthDateString();
+                if (field.getAnnotation(DateFormat.class) != null) {
+                    yield generateDateString();
                 }
                 yield UUID.randomUUID().toString().substring(0, 8);
             }
@@ -186,7 +187,7 @@ public class RandomModelGenerator {
         return Collections.emptyList();
     }
 
-    private static String generateBirthDateString() {
+    private static String generateDateString() {
         int yearsAgo = random.nextInt(101);  // 0–100 лет
         int extraDays = random.nextInt(366);
 
