@@ -1,29 +1,27 @@
 package api.requests.steps;
 
 import api.generators.RandomModelGenerator;
+import api.models.PersonCreateRequest;
+import api.models.PersonResponse;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 
-import java.util.List;
-
 public class AdminSteps {
-    /*public static CreateUserRequest createUser(){
-        CreateUserRequest user = RandomModelGenerator.generate(CreateUserRequest.class);
-
-        // создание пользователя
-        new ValidatedCrudRequester<CreateUserRequest>(RequestSpec.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpec.entityWasCreatad())
-                .post(user);
-        return user;
+    public static PersonResponse createPerson(PersonCreateRequest request) {
+        return new ValidatedCrudRequester<PersonResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.PERSON,
+                ResponseSpec.entityWasCreatad()   // предполагаю, что метод называется именно так
+        ).post(request);
     }
 
-    public static List<CreateUserResponse> getAllUsers() {
-        return new ValidatedCrudRequester<CreateUserResponse>(
-                RequestSpec.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpec.requestReturnsOk()).getAll(CreateUserResponse[].class);
-    }*/
+    public static PersonResponse createPerson() {
+        PersonCreateRequest request = RandomModelGenerator.generate(PersonCreateRequest.class);
+        return createPerson(request);
+    }
+
+
+
 }
