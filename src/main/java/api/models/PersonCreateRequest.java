@@ -1,13 +1,12 @@
 package api.models;
 
 import api.models.enums.Gender;
-import common.annotations.DateFormat;
+import api.generators.annotations.DateFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
