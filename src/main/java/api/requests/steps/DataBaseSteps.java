@@ -1,4 +1,4 @@
-package api.steps;
+package api.requests.steps;
 
 import api.database.dao.PatientNameDao;
 import api.database.dao.PersonUuidDao;

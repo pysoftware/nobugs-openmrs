@@ -1,6 +1,10 @@
 package api.person;
 
 import api.BaseTest;
+import api.database.dao.PersonUuidDao;
+import api.database.dao.comparison.DaoAndModelAssertions;
+import api.database.dao.comparison.DaoComparisonConfig;
+import api.database.dao.comparison.DaoModelComparator;
 import api.generators.RandomModelGenerator;
 import api.models.PersonCreateRequest;
 import api.models.PersonName;
@@ -9,10 +13,13 @@ import api.models.comparison.ModelAssertions;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
+import api.requests.steps.DataBaseSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 import org.junit.jupiter.api.Test;
 
+import javax.xml.crypto.Data;
+import java.util.Comparator;
 import java.util.List;
 
 import static api.requests.steps.AdminSteps.createPerson;
@@ -62,6 +69,19 @@ public class CreatePersonTest extends BaseTest {
         PersonResponse personResponse2 = createPerson(user2);
 
         ModelAssertions.assertThatModels(user2, personResponse2).match();
+
+        PersonUuidDao personUuidDao1 = DataBaseSteps.getPersonByUuid(personResponse1.getUuid());
+        PersonUuidDao personUuidDao2 = DataBaseSteps.getPersonByUuid(personResponse2.getUuid());
+
+        //personResponse1.setUuid("23433");
+
+        DaoAndModelAssertions.assertThat(personUuidDao1, personResponse1).match();
+        DaoAndModelAssertions.assertThat(personUuidDao2, personResponse2).match();
+
+//        softly.assertThat(personUuidDao1.getUuid()).isEqualTo(personResponse1.getUuid());
+//        softly.assertThat(personUuidDao2.getUuid()).isEqualTo(personResponse2.getUuid());
+//        softly.assertThat(personUuidDao1.getUuid()).isNotEqualTo(personUuidDao2.getUuid());
+
     }
 
     @Test
@@ -74,8 +94,7 @@ public class CreatePersonTest extends BaseTest {
                 RequestSpec.adminSpec(),
                 Endpoint.PERSON,
                 ResponseSpec.requestReturnsBadRequest(errorPersonNamesIsNull))
-                .post(user);
+                .post(user).extract().as(PersonResponse.class);
 
     }
-
 }
