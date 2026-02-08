@@ -1,11 +1,13 @@
 package api.models;
 
-import api.generators.annotations.DateFormat;
 import api.models.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.OffsetDateTime;
+
 
 @Data
 @NoArgsConstructor
@@ -13,6 +15,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PersonUpdateRequest extends BaseModel{
     private Gender gender;
-    @DateFormat
-    private String birthdate;
+    private OffsetDateTime birthdate;
+
 }

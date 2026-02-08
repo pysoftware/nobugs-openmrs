@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Data
@@ -15,7 +15,7 @@ import java.util.List;
 public class Person extends BaseModel {
     private String gender;
     private Integer age;
-    private LocalDateTime birthdate;
+    private OffsetDateTime birthdate;
     private Boolean birthdateEstimated;
     private Boolean dead;
     private Boolean deathDate;
