@@ -119,6 +119,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.0.33</version> <!-- или 9.0.0, актуальная на 2025 год -->
+            <scope>test</scope> <!-- чтобы был только для тестов, если не нужен в основном коде -->
+        </dependency>
+        <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <version>1.9.22</version>  <!-- или 1.9.23+ если найдёшь -->
