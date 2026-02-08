@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @NoArgsConstructor
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public class AuditInfo extends BaseModel {
     private Creator creator;
-    private LocalDateTime dateCreated;
+    private OffsetDateTime dateCreated;
     private ChangedBy changedBy;
-    private LocalDateTime dateChanged;
+    private OffsetDateTime dateChanged;
 }

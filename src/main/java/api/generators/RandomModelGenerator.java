@@ -11,6 +11,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -128,9 +129,6 @@ public class RandomModelGenerator {
                 if (field.getName().toLowerCase().contains("postal")) {
                     yield String.format("%05d", 10000 + random.nextInt(90000));
                 }
-                if (field.getAnnotation(DateFormat.class) != null) {
-                    yield generateDateString(field.getAnnotation(DateFormat.class).pattern());
-                }
                 yield UUID.randomUUID().toString().substring(0, 8);
             }
             case Class<?> c when c.equals(Integer.class) || c.equals(int.class) -> random.nextInt(1000);
@@ -138,6 +136,7 @@ public class RandomModelGenerator {
             case Class<?> c when c.equals(Double.class) || c.equals(double.class) -> random.nextDouble() * 100;
             case Class<?> c when c.equals(Float.class) || c.equals(float.class) -> random.nextFloat() * 100;
             case Class<?> c when c.equals(Boolean.class) || c.equals(boolean.class) -> random.nextBoolean();
+            case Class<?> c when c.equals(OffsetDateTime.class) -> generateDateOffsetDateTime();
             case Class<?> c when c.equals(Date.class) -> new Date(System.currentTimeMillis() - random.nextInt(1000000000));
             default -> generate(type);
         };
@@ -186,17 +185,23 @@ public class RandomModelGenerator {
         return Collections.emptyList();
     }
 
-    private static String generateDateString(String pattern) {
-        int yearsAgo = random.nextInt(101);  // 0–100 лет
-        int extraDays = random.nextInt(366);
+    private static OffsetDateTime generateDateOffsetDateTime() {
+        // Возраст от 0 до 100 лет
+        int age = random.nextInt(101);  // 0..100 включительно
 
-        LocalDate date = LocalDate.now()
-                .minusYears(yearsAgo)
-                .minusDays(extraDays);
+        // Случайное количество дней внутри года
+        int extraDays = random.nextInt(365);
 
-        return date.atStartOfDay(ZoneOffset.UTC)
-                .format(DateTimeFormatter.ofPattern(pattern));
-        // → по умолчанию формат "yyyy-MM-dd'T'HH:mm:ss.SSSZ" - "2003-05-08T00:00:00.000+0000"
+        // Генерируем дату рождения
+        OffsetDateTime birthDate = OffsetDateTime.now(ZoneOffset.UTC)
+                .minusYears(age)                // отнимаем годы
+                .minusDays(extraDays)           // добавляем разброс внутри года
+                .withHour(random.nextInt(24))   // случайное время суток
+                .withMinute(random.nextInt(60))
+                .withSecond(random.nextInt(60))
+                .withNano(0);                   // без лишних наносекунд
+
+        return birthDate;
     }
 
     private static <E extends Enum<E>> E randomEnum(Class<E> enumClass) {

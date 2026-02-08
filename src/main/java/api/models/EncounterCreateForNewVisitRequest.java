@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Data
@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class EncounterCreateForNewVisitRequest extends BaseModel {
-    private LocalDateTime encounterDatetime;
+    private OffsetDateTime encounterDatetime;
     private String patient;
     private String encounterType;
     private String location;
