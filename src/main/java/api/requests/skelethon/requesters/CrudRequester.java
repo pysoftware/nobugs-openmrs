@@ -1,16 +1,14 @@
 package api.requests.skelethon.requesters;
 
 
-import api.requests.skelethon.interfaces.GetAllEndpointInterface;
-import api.specs.RequestSpec;
-import io.restassured.response.ValidatableResponse;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
 import api.models.BaseModel;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.HttpRequest;
 import api.requests.skelethon.interfaces.CrudEndpointInterface;
-import org.apache.http.HttpStatus;
+import api.requests.skelethon.interfaces.GetAllEndpointInterface;
+import io.restassured.response.ValidatableResponse;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
 
 import static io.restassured.RestAssured.given;
 
@@ -55,19 +53,19 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
     }
 
     @Override
-    public ValidatableResponse update(BaseModel model) {
+    public ValidatableResponse update(BaseModel model, String uuid) {
 
         return given()
                 .spec(requestSpecification)
                 .body(model)
-                .put(endpoint.getUrl())
+                .post(endpoint.getUrl() + "/" + uuid)
                 .then()
                 .assertThat()
                 .spec(responseSpecification);
     }
 
     @Override
-    public Object delete(long id) {
+    public Object delete(String uuid) {
         return null;
     }
 
