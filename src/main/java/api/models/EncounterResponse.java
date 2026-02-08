@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Data
@@ -16,7 +16,7 @@ import java.util.List;
 public class EncounterResponse extends BaseModel {
     private String uuid;
     private String display;
-    private LocalDateTime encounterDatetime;
+    private OffsetDateTime encounterDatetime;
     private Patient patient;
     private EncounterLocation location;
     private EncounterForm form;

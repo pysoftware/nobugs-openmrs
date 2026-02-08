@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Data
@@ -20,8 +20,8 @@ public class VisitResponse extends BaseModel {
     private VisitType visitType;
     private String indication;
     private Location location;
-    private LocalDateTime startDatetime;
-    private LocalDateTime stopDatetime;
+    private OffsetDateTime startDatetime;
+    private OffsetDateTime stopDatetime;
     private List<Encounter> encounters;
     private List<Object> attributes;
     private Boolean voided;
