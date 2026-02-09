@@ -20,7 +20,7 @@ public class UserSessionExtension implements BeforeEachCallback {
         if (annotation != null){ //если есть, добавляем в local storage токен админа
             int userCount = annotation.value();
 
-           /* SessionStorage.clear();
+            SessionStorage.clear();
             List<CreateUserRequest> users = new LinkedList<>();
 
             for (int i = 0; i < userCount; i++){
@@ -32,7 +32,7 @@ public class UserSessionExtension implements BeforeEachCallback {
 
             int authAsUser = annotation.auth();
 
-            BasePage.authAsUser(SessionStorage.getUser(authAsUser));*/
+            BasePage.authAsUser(SessionStorage.getUser(authAsUser));
 
         }
     }
