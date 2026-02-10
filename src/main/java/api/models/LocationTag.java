@@ -11,7 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PatientCreateNewRequest extends BaseModel {
-    private List<IdentifierRequest> identifiers;
-    private Person person;
+public class LocationTag {
+    private String uuid;
+    private String display;
+    private List<LocationTagLink> links;
 }

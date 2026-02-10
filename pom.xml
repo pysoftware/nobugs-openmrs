@@ -130,5 +130,11 @@
             <version>1.9.22</version>  <!-- или 1.9.23+ если найдёшь -->
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.17</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

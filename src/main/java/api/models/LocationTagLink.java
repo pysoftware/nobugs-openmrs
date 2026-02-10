@@ -5,13 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PatientCreateNewRequest extends BaseModel {
-    private List<IdentifierRequest> identifiers;
-    private Person person;
+public class LocationTagLink extends BaseModel {
+    private String rel;
+    private String uri;
 }

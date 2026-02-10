@@ -18,6 +18,24 @@ public enum Endpoint {
             "/person",
             PersonCreateRequest.class,
             PersonResponse.class
+    ),
+
+    PATIENT(
+            "/patient",
+            PatientCreateNewRequest.class,
+            PatientResponse.class
+    ),
+
+    PATIENT_IDENTIFIER_TYPE(
+            "/patientidentifiertype",
+            PatientIdentifierTypeCreateRequest.class,
+            PatientIdentifierTypeResponse.class
+    ),
+
+    LOCATION(
+            "/location",
+            LocationCreateRequest.class,
+            LocationResponse.class
     );
 
     private final String url;
