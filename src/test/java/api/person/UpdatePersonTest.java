@@ -13,15 +13,13 @@ import common.annotations.PrepareData;
 import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 
-import static api.requests.steps.AdminSteps.createPerson;
-
 public class UpdatePersonTest extends BaseTest {
     @PrepareData(value = "person")
     @Test
     public void adminCanCreatePersonWithCorrectData() {
 
         //создание объекта пользователя
-        String uuidPerson = SessionStorage.getMainPerson().getUuid();
+        String uuidPerson = SessionStorage.getPerson(1).getUuid();
         PersonUpdateRequest personUpdate = RandomModelGenerator.generate(PersonUpdateRequest.class);
         // обновление пользователя
         PersonResponse personResponse = new ValidatedCrudRequester<PersonResponse>(

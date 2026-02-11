@@ -1,13 +1,8 @@
 package common.extensions;
 
-import api.models.PersonResponse;
 import common.annotations.PrepareData;
-import common.storage.SessionStorage;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static api.requests.steps.AdminSteps.createPerson;
 
@@ -22,43 +17,25 @@ public class PrepareDataExtension implements BeforeEachCallback {
             return;
         }
 
-        String entityType = annotation.value();
+        String entityType = annotation.value().toLowerCase();
         int count = annotation.count();
-
-        String storageKey = annotation.storageKey().isEmpty()
-                ? "prepared_" + entityType + "s"
-                : annotation.storageKey();
-
-        List<Object> created = new ArrayList<>();
 
         for (int i = 0; i < count; i++) {
             Object entity;
-
-            switch (entityType.toLowerCase()) {
+            switch (entityType) {
                 case "person":
                     entity = createPerson();
                     break;
-
-/*                case "patient":
-                    entity = createPatient();          // предполагается, что метод существует
-                    break;
-
-                case "visit":
-                    entity = createVisit();            // предполагается, что метод существует
-                    break;*/
-
+                // case "patient":
+                //     entity = createPatient();
+                //     break;
+                // case "visit":
+                //     entity = createVisit();
+                //     break;
                 default:
-                    throw new UnsupportedOperationException(
-                            "Не поддерживается тип сущности: " + entityType);
+                    throw new UnsupportedOperationException("Не поддерживается тип сущности: " + entityType);
             }
 
-            created.add(entity);
-        }
-
-        SessionStorage.put(storageKey, created);
-
-        if (!created.isEmpty()) {
-            SessionStorage.put("main_" + entityType, created.get(0));
         }
     }
 }
