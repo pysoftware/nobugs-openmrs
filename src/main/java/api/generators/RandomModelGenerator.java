@@ -5,15 +5,12 @@ import api.generators.annotations.GeneratingStringRule;
 import api.generators.annotations.Optional;
 import api.models.enums.Gender;
 import com.github.curiousoddman.rgxgen.RgxGen;
-import api.generators.annotations.DateFormat;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class RandomModelGenerator {
@@ -80,7 +77,7 @@ public class RandomModelGenerator {
                     GeneratingDoubleRule doubleRule = field.getAnnotation(GeneratingDoubleRule.class);
                     value = doubleRule != null
                             ? generateFromDoubleRule(doubleRule, field.getType())
-                            : generateRandomValue(field);
+                            : generateRandomValue(field, fixedValues);
                 }
 
                 field.set(instance, value);
@@ -119,11 +116,11 @@ public class RandomModelGenerator {
         return optional;
     }
 
-    private static Object generateRandomValue(Field field) {
+    private static Object generateRandomValue(Field field, Map<String, Object> fixedValues) {
         Class<?> type = field.getType();
 
         return switch (type) {
-            case Class<?> c when c.equals(List.class) -> generateList(field);
+            case Class<?> c when c.equals(List.class) -> generateList(field, fixedValues);
             case Class<?> c when c.equals(Gender.class) -> randomEnum(Gender.class);
             case Class<?> c when c.equals(String.class) -> {
                 if (field.getName().toLowerCase().contains("postal")) {
@@ -137,8 +134,9 @@ public class RandomModelGenerator {
             case Class<?> c when c.equals(Float.class) || c.equals(float.class) -> random.nextFloat() * 100;
             case Class<?> c when c.equals(Boolean.class) || c.equals(boolean.class) -> random.nextBoolean();
             case Class<?> c when c.equals(OffsetDateTime.class) -> generateDateOffsetDateTime();
-            case Class<?> c when c.equals(Date.class) -> new Date(System.currentTimeMillis() - random.nextInt(1000000000));
-            default -> generate(type);
+            case Class<?> c when c.equals(Date.class) ->
+                    new Date(System.currentTimeMillis() - random.nextInt(1000000000));
+            default -> generate(type, fixedValues);
         };
     }
 
@@ -169,7 +167,7 @@ public class RandomModelGenerator {
         return Collections.emptyList();
     }
 
-    private static List<Object> generateList(Field field) {
+    private static List<Object> generateList(Field field, Map<String, Object> fixedValues) {
         Type genericType = field.getGenericType();
         if (genericType instanceof ParameterizedType pt) {
             Type itemType = pt.getActualTypeArguments()[0];
@@ -177,7 +175,7 @@ public class RandomModelGenerator {
                 int count = random.nextInt(3) + 1; // 1–3 элемента
                 List<Object> list = new ArrayList<>();
                 for (int i = 0; i < count; i++) {
-                    list.add(generate(itemClass));
+                    list.add(generate(itemClass, fixedValues));
                 }
                 return list;
             }

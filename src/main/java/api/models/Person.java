@@ -1,5 +1,6 @@
 package api.models;
 
+import api.models.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,12 +14,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Person extends BaseModel {
-    private String gender;
+    private Gender gender;
     private Integer age;
     private OffsetDateTime birthdate;
     private Boolean birthdateEstimated;
     private Boolean dead;
-    private Boolean deathDate;
+    private OffsetDateTime deathDate;
     private String causeOfDeath;
     private List<PersonName> names;
     private List<PersonAddress> addresses;
