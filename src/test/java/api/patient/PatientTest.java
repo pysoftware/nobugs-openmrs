@@ -38,8 +38,9 @@ public class PatientTest extends BaseTest {
 
         // Create patient
         IdentifierRequest identifierRequest = RandomModelGenerator.generate(IdentifierRequest.class,
-                Map.of("identifierType", patientIdentifierType.getUuid(), "location", location.getUuid(), "dead", false));
-        Map<String, Object> fieldsOfPatient = new HashMap<>(Map.of("identifiers", List.of(identifierRequest)));
+                Map.of("identifierType", patientIdentifierType.getUuid(), "location", location.getUuid()));
+        Map<String, Object> fieldsOfPatient = new HashMap<>(Map.of("identifiers", List.of(identifierRequest),
+                "dead", false));
         fieldsOfPatient.put("causeOfDeath", null);
         fieldsOfPatient.put("deathDate", null);
 
