@@ -9,25 +9,24 @@ import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
+import common.annotations.PrepareData;
+import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 
-import static api.requests.steps.AdminSteps.createPerson;
-
 public class UpdatePersonTest extends BaseTest {
+    @PrepareData(value = "person")
     @Test
     public void adminCanCreatePersonWithCorrectData() {
 
-        //создание объекта пользователя
-        PersonResponse user = createPerson();
-        String uuid = user.getUuid();
-        PersonUpdateRequest userUpdate = RandomModelGenerator.generate(PersonUpdateRequest.class);
-        // обновление пользователя
+        String uuidPerson = SessionStorage.getPerson(1).getUuid();
+        PersonUpdateRequest personUpdate = RandomModelGenerator.generate(PersonUpdateRequest.class);
+
         PersonResponse personResponse = new ValidatedCrudRequester<PersonResponse>(
                 RequestSpec.adminSpec(),
                 Endpoint.PERSON,
                 ResponseSpec.requestReturnsOk())
-                .update(userUpdate, uuid);
+                .update(personUpdate, uuidPerson);
 
-        ModelAssertions.assertThatModels(userUpdate, personResponse).match();
+        ModelAssertions.assertThatModels(personUpdate, personResponse).match();
     }
 }

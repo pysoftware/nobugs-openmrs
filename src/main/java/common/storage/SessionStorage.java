@@ -1,114 +1,123 @@
 package common.storage;
 
-import api.requests.steps.UserSteps;
+import api.models.PersonResponse;
 
 import java.util.*;
-
-
-
+/**
+ * Потокобезопасное хранилище тестовых данных (ThreadLocal).
+ * Сущности хранятся по типу с автоматической нумерацией начиная с 1.
+ */
 public class SessionStorage {
-    /* Thread Local - способ сделать SessionStorage потокобезопасным
 
-    Каждый поток обращаясь к INSTANCE.get() получают свою КОПИЮ
-
-    Map<Thread, SessionStorage>
-
-    Тест1 : создал юзеров, положил в SessionStorage (СВОЯ КОПИЯ1), работает с ними
-    Тест2 : создал юзеров, положил в SessionStorage (СВОЯ КОПИЯ2), работает с ними
-    Тест3 : создал юзеров, положил в SessionStorage (СВОЯ КОПИЯ3), работает с ними
-     */
     private static final ThreadLocal<SessionStorage> INSTANCE = ThreadLocal.withInitial(SessionStorage::new);
-/*
-    private final LinkedHashMap<CreateUserRequest, UserSteps> userStepsMap = new LinkedHashMap<>();
-    private final Map<Integer, List<CreateAccountResponse>> preparedAccountsByUser = new HashMap<>();
-    // Текущий активный пользователь (индекс начиная с 1)
-    private int currentUserIndex = 1;
 
-    private SessionStorage() {}
+    // тип сущности (person, patient, visit и т.д.) → Map<индекс с 1, объект>
+    private final Map<String, Map<Integer, Object>> entitiesByType = new LinkedHashMap<>();
 
-    public static void addUsers(List<CreateUserRequest> users) {
-        for (CreateUserRequest user: users) {
-            INSTANCE.get().userStepsMap.put(user, new UserSteps(user.getUsername(), user.getPassword()));
+    private SessionStorage() {
+    }
+
+    /**
+     * Добавляет сущность определённого типа с автоматической нумерацией (начиная с 1)
+     */
+    public static void addEntity(String type, Object entity) {
+        if (entity == null) {
+            return;
         }
-        // После добавления пользователей сразу установить первого как текущего
-        if (!users.isEmpty()) {
-            INSTANCE.get().currentUserIndex = 1;
+
+        SessionStorage storage = INSTANCE.get();
+        String normalizedType = type.toLowerCase();
+
+        Map<Integer, Object> typeMap = storage.entitiesByType
+                .computeIfAbsent(normalizedType, k -> new LinkedHashMap<>());
+
+        int nextIndex = typeMap.size() + 1;
+        typeMap.put(nextIndex, entity);
+    }
+
+    /**
+     * Получить сущность по типу и номеру (индекс начинается с 1)
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T get(String type, int index, Class<T> clazz) {
+        SessionStorage storage = INSTANCE.get();
+        String normalizedType = type.toLowerCase();
+
+        Map<Integer, Object> typeMap = storage.entitiesByType.get(normalizedType);
+        if (typeMap == null) {
+            return null;
         }
-    }
 
-    *//**
-     * Возвращаем объект CreateUserRequest по его порядковому номеру в списке созданных пользователей.
-     * @param number Порядковый номер, начиная с 1 (а не с 0).
-     * @return Объект CreateUserRequest, соответствующий указанному порядковому номеру.
-     *//*
-    public static CreateUserRequest getUser(int number) {
-        return new ArrayList<>(INSTANCE.get().userStepsMap.keySet()).get(number-1);
-    }
-
-    public static CreateUserRequest getUser() {
-        return getUser(INSTANCE.get().currentUserIndex);
-    }
-
-    public static UserSteps getSteps(int number) {
-        return new ArrayList<>(INSTANCE.get().userStepsMap.values()).get(number-1);
-    }
-
-    public static UserSteps getSteps() {
-        return getSteps(INSTANCE.get().currentUserIndex);
-    }
-    *//**
-     * Переключает текущую активную сессию на пользователя с указанным номером.
-     * После этого все вызовы getSteps() / getUser() без параметров будут работать с этим пользователем.
-     *
-     * @param number номер пользователя начиная с 1
-     *//*
-    public static void switchToSession(int number) {
-        CreateUserRequest user = getUser(number);
-        authAsUser(user);
-    }
-
-    *//**
-     * Возвращает количество созданных пользователей
-     *//*
-    public static int getUserCount() {
-        return INSTANCE.get().userStepsMap.size();
-    }
-
-    *//**
-     * Добавляет подготовленные аккаунты для всех пользователей
-     *//*
-    public static void addPreparedAccounts(Map<Integer, List<CreateAccountResponse>> allAccounts) {
-        INSTANCE.get().preparedAccountsByUser.clear();
-        INSTANCE.get().preparedAccountsByUser.putAll(allAccounts);
-    }
-
-    *//**
-     * Возвращает подготовленный аккаунт по индексу для текущего пользователя
-     *//*
-    public static CreateAccountResponse getPreparedAccount(int accountIndex) {
-        return getPreparedAccount(INSTANCE.get().currentUserIndex, accountIndex);
-    }
-
-    *//**
-     * Возвращает подготовленный аккаунт по индексу для указанного пользователя
-     *//*
-    public static CreateAccountResponse getPreparedAccount(int userIndex, int accountIndex) {
-        List<CreateAccountResponse> accounts = INSTANCE.get().preparedAccountsByUser.get(userIndex);
-        if (accounts == null || accounts.size() < accountIndex) {
-            throw new IllegalStateException(
-                    String.format("Подготовленный аккаунт %d для пользователя %d не найден",
-                            accountIndex, userIndex)
-            );
+        Object obj = typeMap.get(index);
+        if (obj == null) {
+            return null;
         }
-        return accounts.get(accountIndex - 1);
+
+        if (!clazz.isInstance(obj)) {
+            throw new ClassCastException(
+                    String.format("Сущность типа '%s' с индексом %d имеет класс %s, ожидался %s",
+                            type, index, obj.getClass().getName(), clazz.getName()));
+        }
+
+        return (T) obj;
     }
 
-    *//**
-     * Полная очистка SessionStorage
-     *//*
+
+    /**
+     * Получить все сущности заданного типа в порядке создания
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> getAll(String type, Class<T> clazz) {
+        SessionStorage storage = INSTANCE.get();
+        String normalizedType = type.toLowerCase();
+
+        Map<Integer, Object> typeMap = storage.entitiesByType.get(normalizedType);
+        if (typeMap == null || typeMap.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<T> result = new ArrayList<>();
+        for (int i = 1; i <= typeMap.size(); i++) {
+            Object obj = typeMap.get(i);
+            if (obj != null && clazz.isInstance(obj)) {
+                result.add((T) obj);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Количество сущностей заданного типа
+     */
+    public static int count(String type) {
+        SessionStorage storage = INSTANCE.get();
+        String normalizedType = type.toLowerCase();
+        Map<Integer, Object> typeMap = storage.entitiesByType.get(normalizedType);
+        return typeMap != null ? typeMap.size() : 0;
+    }
+
+    /**
+     * Полная очистка хранилища
+     */
     public static void clear() {
-        INSTANCE.get().userStepsMap.clear();
-        INSTANCE.get().preparedAccountsByUser.clear();
-        INSTANCE.get().currentUserIndex = 1;
-    }*/
+        INSTANCE.get().entitiesByType.clear();
+    }
+
+    // Person
+    public static void addPerson(PersonResponse person) {
+        addEntity("person", person);
+    }
+
+    /**
+     * Возвращает персону по порядковому номеру (нумерация начинается с 1).
+     * Если индекс выходит за границы — возвращает null.
+     */
+    public static PersonResponse getPerson(int index) {
+        return get("person", index, PersonResponse.class);
+    }
+
+    public static int getPersonCount() {
+        return count("person");
+    }
+
 }
