@@ -27,27 +27,6 @@ public class RandomModelGenerator {
         return generateWithFixed(clazz, fixedValues != null ? fixedValues : Collections.emptyMap());
     }
 
-    // Старый varargs-метод оставлен для совместимости
-    public static <T> T generate(Object... valuesAndClass) {
-        if (valuesAndClass == null || valuesAndClass.length == 0) {
-            throw new IllegalArgumentException("At least class must be provided");
-        }
-        @SuppressWarnings("unchecked")
-        Class<T> clazz = (Class<T>) valuesAndClass[valuesAndClass.length - 1];
-        Map<String, Object> fixed = new HashMap<>();
-        List<Field> optionalFields = getOptionalFields(clazz);
-
-        if (valuesAndClass.length - 1 > optionalFields.size()) {
-            throw new IllegalArgumentException("Too many optional values provided");
-        }
-
-        for (int i = 0; i < valuesAndClass.length - 1; i++) {
-            Field field = optionalFields.get(i);
-            fixed.put(field.getName(), valuesAndClass[i]);
-        }
-
-        return generateWithFixed(clazz, fixed);
-    }
 
     // Основной метод генерации с приоритетами
     private static <T> T generateWithFixed(Class<T> clazz, Map<String, Object> fixedValues) {

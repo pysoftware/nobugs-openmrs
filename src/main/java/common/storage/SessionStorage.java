@@ -116,28 +116,8 @@ public class SessionStorage {
         return get("person", index, PersonResponse.class);
     }
 
-    public static List<PersonResponse> getAllPersons() {
-        return getAll("person", PersonResponse.class);
-    }
-
     public static int getPersonCount() {
         return count("person");
     }
-
-/*
-    // Patient (пример, добавь когда будет реализация)
-    public static void addPatient(PatientResponse patient) {
-        addEntity("patient", patient);
-    }
-
-    public static PatientResponse getPatient(int index) {
-        return get("patient", index, PatientResponse.class);
-    }
-
-    public static List<PatientResponse> getAllPatients() {
-        return getAll("patient", PatientResponse.class);
-    }
-*/
-
 
 }

@@ -18,10 +18,9 @@ public class UpdatePersonTest extends BaseTest {
     @Test
     public void adminCanCreatePersonWithCorrectData() {
 
-        //создание объекта пользователя
         String uuidPerson = SessionStorage.getPerson(1).getUuid();
         PersonUpdateRequest personUpdate = RandomModelGenerator.generate(PersonUpdateRequest.class);
-        // обновление пользователя
+
         PersonResponse personResponse = new ValidatedCrudRequester<PersonResponse>(
                 RequestSpec.adminSpec(),
                 Endpoint.PERSON,
