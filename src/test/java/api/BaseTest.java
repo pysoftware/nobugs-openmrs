@@ -3,7 +3,9 @@ package api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import common.extensions.PrepareDataExtension;
 import common.extensions.TimingExtension;
+import common.storage.SessionStorage;
 import io.restassured.RestAssured;
 import io.restassured.config.ObjectMapperConfig;
 
@@ -13,6 +15,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+
+@ExtendWith(PrepareDataExtension.class)
 @ExtendWith(TimingExtension.class)
 public class BaseTest {
     protected SoftAssertions softly;
@@ -34,6 +38,7 @@ public class BaseTest {
     @AfterEach
     public void afterTest(){
         softly.assertAll();
+        SessionStorage.clear();
     }
 }
 

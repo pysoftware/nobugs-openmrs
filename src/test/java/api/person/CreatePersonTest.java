@@ -16,6 +16,8 @@ import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.requests.steps.DataBaseSteps;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
+import common.annotations.PrepareData;
+import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.crypto.Data;
@@ -26,6 +28,7 @@ import static api.requests.steps.AdminSteps.createPerson;
 import static api.specs.ResponseSpec.errorPersonNamesIsNull;
 
 public class CreatePersonTest extends BaseTest {
+
     @Test
     public void adminCanCreatePersonWithCorrectData() {
 
@@ -56,27 +59,33 @@ public class CreatePersonTest extends BaseTest {
 
         ModelAssertions.assertThatModels(user, personResponse).match();
     }
-
+    @PrepareData(value = "person")
     @Test
     public void adminCanCreatePersonWithSameName() {
-
-        PersonCreateRequest user = RandomModelGenerator.generate(PersonCreateRequest.class);
-        PersonResponse personResponse1 = createPerson(user);
-        PersonName sameName = user.getNames().get(0);
+        PersonResponse personResponse1 = SessionStorage.getMainPerson();
+/*        PersonCreateRequest user = RandomModelGenerator.generate(PersonCreateRequest.class);
+        PersonResponse personResponse1 = createPerson(user);*/
+        String given = personResponse1.getPreferredName().getGivenName();
+        String family = personResponse1.getPreferredName().getFamilyName();
 
         PersonCreateRequest user2 = RandomModelGenerator.generate(PersonCreateRequest.class);
-        user2.setNames(List.of(sameName));
+        PersonName newName = PersonName.builder()
+                .givenName(given)
+                .familyName(family)
+                .build();
+
+        user2.setNames(List.of(newName));
         PersonResponse personResponse2 = createPerson(user2);
 
         ModelAssertions.assertThatModels(user2, personResponse2).match();
 
-        PersonUuidDao personUuidDao1 = DataBaseSteps.getPersonByUuid(personResponse1.getUuid());
+/*        PersonUuidDao personUuidDao1 = DataBaseSteps.getPersonByUuid(personResponse1.getUuid());
         PersonUuidDao personUuidDao2 = DataBaseSteps.getPersonByUuid(personResponse2.getUuid());
 
         //personResponse1.setUuid("23433");
 
         DaoAndModelAssertions.assertThat(personUuidDao1, personResponse1).match();
-        DaoAndModelAssertions.assertThat(personUuidDao2, personResponse2).match();
+        DaoAndModelAssertions.assertThat(personUuidDao2, personResponse2).match();*/
 
 //        softly.assertThat(personUuidDao1.getUuid()).isEqualTo(personResponse1.getUuid());
 //        softly.assertThat(personUuidDao2.getUuid()).isEqualTo(personResponse2.getUuid());

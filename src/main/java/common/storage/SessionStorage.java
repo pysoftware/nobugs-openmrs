@@ -1,5 +1,6 @@
 package common.storage;
 
+import api.models.PersonResponse;
 import api.requests.steps.UserSteps;
 
 import java.util.*;
@@ -222,12 +223,12 @@ public class SessionStorage {
         return getMain("prepared_persons", PersonResponse.class);
     }
 
-    // Для patient (пример, если добавишь)
+/*    // Для patient (пример, если добавишь)
     public static List<PatientResponse> getPatients() {
         return getList("prepared_patients", PatientResponse.class);
     }
 
     public static PatientResponse getMainPatient() {
         return getMain("prepared_patients", PatientResponse.class);
-    }
+    }*/
 }
