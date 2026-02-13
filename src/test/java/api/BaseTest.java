@@ -38,6 +38,7 @@ public class BaseTest {
     @AfterEach
     public void afterTest(){
         softly.assertAll();
+        SessionStorage.deleteAllViaApi();
         SessionStorage.clear();
     }
 }

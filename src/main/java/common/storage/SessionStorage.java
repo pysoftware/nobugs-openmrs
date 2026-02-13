@@ -1,6 +1,10 @@
 package common.storage;
 
 import api.models.PersonResponse;
+import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.CrudRequester;
+import api.specs.RequestSpec;
+import api.specs.ResponseSpec;
 
 import java.util.*;
 /**
@@ -101,6 +105,69 @@ public class SessionStorage {
      */
     public static void clear() {
         INSTANCE.get().entitiesByType.clear();
+    }
+    /**
+     * Удаляет через API все сущности заданного типа, которые были сохранены в хранилище
+     */
+    public static void deleteAllOfTypeViaApi(String type) {
+        String normalizedType = type.toLowerCase().trim();
+
+        Map<Integer, Object> typeMap = INSTANCE.get().entitiesByType.get(normalizedType);
+        if (typeMap == null || typeMap.isEmpty()) {
+            return;
+        }
+
+        Endpoint endpoint = Endpoint.findByEntityType(normalizedType);
+        if (endpoint == null) {
+            System.err.println("Не найден Endpoint для типа: " + type);
+            return;
+        }
+
+        List<Object> entities = new ArrayList<>(typeMap.values());
+
+        CrudRequester requester = new CrudRequester(
+                RequestSpec.adminSpec(),
+                endpoint,
+                ResponseSpec.requestReturnsNoContent()
+        );
+
+        for (Object entity : entities) {
+            String uuid = getUuid(entity);
+            if (uuid != null && !uuid.isBlank()) {
+                try {
+                    requester.delete(uuid);
+                } catch (Exception e) {
+                    System.err.println("Не удалось удалить " + normalizedType +
+                            " (uuid: " + uuid + "): " + e.getMessage());
+                }
+            }
+        }
+
+        typeMap.clear();
+    }
+
+    /**
+     * Удаляет через API все сущности всех типов, сохранённые в хранилище
+     */
+    public static void deleteAllViaApi() {
+        // Копируем ключи, чтобы избежать ConcurrentModificationException
+        List<String> types = new ArrayList<>(INSTANCE.get().entitiesByType.keySet());
+
+        for (String type : types) {
+            deleteAllOfTypeViaApi(type);
+        }
+    }
+    private static String getUuid(Object entity) {
+        if (entity instanceof PersonResponse person) {
+            return person.getUuid();
+        }
+        // Добавьте сюда другие типы по мере необходимости, далее пример:
+        // if (entity instanceof PatientResponse p) return p.getUuid();
+        // if (entity instanceof VisitResponse v) return v.getUuid();
+
+        System.err.println("Не удалось получить uuid из объекта типа: " +
+                (entity != null ? entity.getClass().getSimpleName() : "null"));
+        return null;
     }
 
     // Person
