@@ -4,9 +4,7 @@ import api.BaseTest;
 import api.database.dao.PersonUuidDao;
 import api.database.dao.comparison.DaoAndModelAssertions;
 import api.generators.RandomModelGenerator;
-import api.models.PersonCreateRequest;
-import api.models.PersonName;
-import api.models.PersonResponse;
+import api.models.*;
 import api.models.comparison.ModelAssertions;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
@@ -19,8 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static api.requests.steps.AdminSteps.createPerson;
-import static api.requests.steps.AdminSteps.getPerson;
+import static api.requests.steps.PersonSteps.*;
 import static api.specs.ResponseSpec.errorPersonNamesIsNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,6 +37,19 @@ public class CreatePersonTest extends BaseTest {
         PersonUuidDao personUuidDao = DataBaseSteps.getPersonByUuid(personUuid);
         DaoAndModelAssertions.assertThat(personUuidDao, personResponse).match();
 
+    }
+    @PrepareData(value = "person")
+    @Test
+    public void adminCanCreatePersonWithAddres() {
+
+        String personUuid = SessionStorage.getPerson(1).getUuid();
+
+        PersonAddressCreateRequest personAddressCreateRequest = RandomModelGenerator.generate(PersonAddressCreateRequest.class);
+        PersonAddressResponse personAddressResponse = createAddressPerson(personAddressCreateRequest, personUuid);
+
+        assertThat(getPerson(personUuid).getPreferredAddress().getAddress1()).isEqualTo(personAddressResponse.getAddress1());
+
+        ModelAssertions.assertThatModels(personAddressCreateRequest, personAddressResponse).match();
     }
 
     @Test
