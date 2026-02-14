@@ -4,7 +4,7 @@ import common.annotations.PrepareData;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import static api.requests.steps.AdminSteps.createPerson;
+import static api.requests.steps.PersonSteps.createPerson;
 
 public class PrepareDataExtension implements BeforeEachCallback {
 

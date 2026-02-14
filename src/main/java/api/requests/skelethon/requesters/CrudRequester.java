@@ -20,16 +20,30 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
         super(requestSpecification, endpoint, responseSpecification);
     }
 
-    @Override
-    public ValidatableResponse post(BaseModel model) {
-        var body = model == null ? "" : model;
-        return given()
-                .spec(requestSpecification)
-                .body(body)
-                .post(endpoint.getUrl())
+    private ValidatableResponse doPost(Consumer<RequestSpecification> specCustomizer, String path, BaseModel model) {
+        RequestSpecification spec = given().spec(requestSpecification);
+        if (model != null) {
+            spec.body(model);
+        } else {
+            throw new IllegalArgumentException("Body model is required for POST");
+        }
+        specCustomizer.accept(spec);
+
+        return spec
+                .post(path)
                 .then()
                 .assertThat()
                 .spec(responseSpecification);
+    }
+
+    @Override
+    public ValidatableResponse post(BaseModel model, String uuid) {
+        return doPost(spec -> spec.pathParams("uuid", uuid), endpoint.getUrl() + "/{uuid}/address", model);
+    }
+
+    @Override
+    public ValidatableResponse post(BaseModel model) {
+        return doPost(spec -> {}, endpoint.getUrl(), model);
     }
 
     private ValidatableResponse doGet(Consumer<RequestSpecification> specCustomizer, String path) {
