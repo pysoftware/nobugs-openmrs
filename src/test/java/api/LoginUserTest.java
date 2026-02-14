@@ -22,24 +22,4 @@ public class LoginUserTest extends BaseTest {
                 .get();
     }
 
-  /*  @Test
-    public void userCanGenerateAuthTokenTest() {
-        // создание объекта пользователя
-        CreateUserRequest user1 = AdminSteps.createUser();
-
-        // создание объекта для логирования
-        LoginRequest userLogin = LoginRequest.builder()
-                .username(user1.getUsername())
-                .password(user1.getPassword())
-                .build();
-
-        // получаем токен юзера
-        new CrudRequester(
-                RequestSpec.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpec.requestReturnsOk())
-                .post(userLogin)
-                .header("Authorization", Matchers.notNullValue());
-
-    }*/
 }
