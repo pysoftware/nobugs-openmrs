@@ -14,7 +14,9 @@ import lombok.NoArgsConstructor;
 public class IdentifierRequest extends BaseModel {
     @GeneratingStringRule(regex = RegexConstants.PATIENT_IDENTIFIER_TYPE_FORMAT)
     private String identifier;
+    @GeneratingStringRule(regex = RegexConstants.UUID_V4)
     private String identifierType;
+    @GeneratingStringRule(regex = RegexConstants.UUID_V4)
     private String location;
     private Boolean preferred;
 }

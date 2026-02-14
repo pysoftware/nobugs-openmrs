@@ -1,6 +1,7 @@
 package api.generators;
 
 import api.generators.annotations.GeneratingDoubleRule;
+import api.generators.annotations.GeneratingOffsetDateTimeRule;
 import api.generators.annotations.GeneratingStringRule;
 import api.generators.annotations.Optional;
 import api.models.enums.Gender;
@@ -50,13 +51,17 @@ public class RandomModelGenerator {
                 // 3. Генерация по аннотациям или рандомно
                 Object value;
                 GeneratingStringRule stringRule = field.getAnnotation(GeneratingStringRule.class);
+                GeneratingDoubleRule doubleRule = field.getAnnotation(GeneratingDoubleRule.class);
+                GeneratingOffsetDateTimeRule offsetDateTimeRule = field.getAnnotation(GeneratingOffsetDateTimeRule.class);
+
                 if (stringRule != null) {
                     value = generateFromRegex(stringRule.regex(), field.getType());
+                } else if (doubleRule != null) {
+                    value = generateFromDoubleRule(doubleRule, field.getType());
+                } else if (offsetDateTimeRule != null) {
+                    value = generateDateOffsetDateTime(offsetDateTimeRule.time());
                 } else {
-                    GeneratingDoubleRule doubleRule = field.getAnnotation(GeneratingDoubleRule.class);
-                    value = doubleRule != null
-                            ? generateFromDoubleRule(doubleRule, field.getType())
-                            : generateRandomValue(field, fixedValues);
+                    value = generateRandomValue(field, fixedValues);
                 }
 
                 field.set(instance, value);
@@ -112,7 +117,7 @@ public class RandomModelGenerator {
             case Class<?> c when c.equals(Double.class) || c.equals(double.class) -> random.nextDouble() * 100;
             case Class<?> c when c.equals(Float.class) || c.equals(float.class) -> random.nextFloat() * 100;
             case Class<?> c when c.equals(Boolean.class) || c.equals(boolean.class) -> random.nextBoolean();
-            case Class<?> c when c.equals(OffsetDateTime.class) -> generateDateOffsetDateTime();
+            case Class<?> c when c.equals(OffsetDateTime.class) -> generateDateOffsetDateTime(true);
             case Class<?> c when c.equals(Date.class) ->
                     new Date(System.currentTimeMillis() - random.nextInt(1000000000));
             default -> generate(type, fixedValues);
@@ -162,7 +167,7 @@ public class RandomModelGenerator {
         return Collections.emptyList();
     }
 
-    private static OffsetDateTime generateDateOffsetDateTime() {
+    private static OffsetDateTime generateDateOffsetDateTime(boolean withTime) {
         // Возраст от 0 до 100 лет
         int age = random.nextInt(101);  // 0..100 включительно
 
@@ -172,13 +177,19 @@ public class RandomModelGenerator {
         // Генерируем дату рождения
         OffsetDateTime birthDate = OffsetDateTime.now(ZoneOffset.UTC)
                 .minusYears(age)                // отнимаем годы
-                .minusDays(extraDays)           // добавляем разброс внутри года
-                .withHour(random.nextInt(24))   // случайное время суток
-                .withMinute(random.nextInt(60))
-                .withSecond(random.nextInt(60))
-                .withNano(0);                   // без лишних наносекунд
+                .minusDays(extraDays);          // добавляем разброс внутри года
 
-        return birthDate;
+        if (withTime) {
+            return birthDate
+                    .withHour(random.nextInt(24))   // случайное время суток
+                    .withMinute(random.nextInt(60))
+                    .withSecond(random.nextInt(60))
+                    .withNano(0);
+        }
+        return birthDate.withHour(0)
+                .withMinute(0)
+                .withSecond(0)
+                .withNano(0);
     }
 
     private static <E extends Enum<E>> E randomEnum(Class<E> enumClass) {
