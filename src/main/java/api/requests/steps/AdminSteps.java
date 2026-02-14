@@ -26,5 +26,14 @@ public class AdminSteps {
         PersonCreateRequest request = RandomModelGenerator.generate(PersonCreateRequest.class);
         return createPerson(request);
     }
+    public static PersonResponse getPerson(String uuid) {
+        return new ValidatedCrudRequester<PersonResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.PERSON,
+                ResponseSpec.requestReturnsOk()
+        ).get(uuid);
+
+    }
+
 
 }
