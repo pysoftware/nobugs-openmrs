@@ -1,5 +1,6 @@
 package api.models;
 
+import api.models.enums.Gender;
 import lombok.*;
 
 import java.time.LocalTime;
@@ -16,7 +17,7 @@ import java.util.List;
 public class PersonResponse extends BaseModel {
     private String uuid;
     private String display;
-    private String gender;
+    private Gender gender;
     private Integer age;
     private OffsetDateTime birthdate;
     private Boolean birthdateEstimated;
