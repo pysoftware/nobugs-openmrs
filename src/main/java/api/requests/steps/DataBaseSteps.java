@@ -16,7 +16,7 @@ public class DataBaseSteps {
             this.name = name;
         }
 
-        private String name;
+        private final String name;
     }
 
     // Patient

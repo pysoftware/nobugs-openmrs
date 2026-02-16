@@ -22,7 +22,7 @@ public class PersonSteps {
                 ResponseSpec.entityWasCreatad()
         ).post(request);
 
-        SessionStorage.addPerson(response);
+        SessionStorage.add(response);
 
         return response;
     }

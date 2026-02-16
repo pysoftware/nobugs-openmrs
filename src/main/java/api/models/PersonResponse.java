@@ -1,6 +1,7 @@
 package api.models;
 
 import api.models.enums.Gender;
+import api.models.interfaces.HasUuid;
 import lombok.*;
 
 import java.time.LocalTime;
@@ -14,7 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 // Search, Create, Update
-public class PersonResponse extends BaseModel {
+public class PersonResponse extends BaseModel implements HasUuid {
     private String uuid;
     private String display;
     private Gender gender;
