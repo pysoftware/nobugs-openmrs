@@ -34,7 +34,6 @@ public class RandomModelGenerator {
         return generateWithFixed(clazz, fixedValues != null ? fixedValues : Collections.emptyMap());
     }
 
-
     // Основной метод генерации с приоритетами
     private static <T> T generateWithFixed(Class<T> clazz, Map<String, Object> fixedValues) {
         try {
