@@ -3,8 +3,6 @@ package api.generators;
 import api.generators.annotations.GeneratingDoubleRule;
 import api.generators.annotations.GeneratingOffsetDateTimeRule;
 import api.generators.annotations.GeneratingStringRule;
-import api.generators.annotations.Optional;
-import api.models.enums.Gender;
 import com.github.curiousoddman.rgxgen.RgxGen;
 
 import java.lang.reflect.Field;
@@ -13,6 +11,7 @@ import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class RandomModelGenerator {
 
@@ -23,11 +22,17 @@ public class RandomModelGenerator {
         return generateWithFixed(clazz, Collections.emptyMap());
     }
 
+    public static <T> T generate(Class<T> clazz, Consumer<T> customizer) {
+        T instance = generate(clazz);
+        customizer.accept(instance);
+        return instance;
+    }
+
+
     // Метод с фиксированными полями по имени (самый удобный и рекомендуемый)
     public static <T> T generate(Class<T> clazz, Map<String, Object> fixedValues) {
         return generateWithFixed(clazz, fixedValues != null ? fixedValues : Collections.emptyMap());
     }
-
 
     // Основной метод генерации с приоритетами
     private static <T> T generateWithFixed(Class<T> clazz, Map<String, Object> fixedValues) {
@@ -39,16 +44,13 @@ public class RandomModelGenerator {
                 field.setAccessible(true);
                 String fieldName = field.getName();
 
-                // 1. Самый высокий приоритет: значение из fixedValues (по имени поля)
+                // Самый высокий приоритет: значение из fixedValues (по имени поля)
                 if (fixedValues.containsKey(fieldName)) {
                     field.set(instance, fixedValues.get(fieldName));
                     continue;
                 }
 
-                // 2. Если поле @Optional и значение не передано — генерируем как обычное поле
-                // (никакого continue — просто идём дальше по логике генерации)
-
-                // 3. Генерация по аннотациям или рандомно
+                // Генерация по аннотациям или рандомно
                 Object value;
                 GeneratingStringRule stringRule = field.getAnnotation(GeneratingStringRule.class);
                 GeneratingDoubleRule doubleRule = field.getAnnotation(GeneratingDoubleRule.class);
@@ -61,7 +63,7 @@ public class RandomModelGenerator {
                 } else if (offsetDateTimeRule != null) {
                     value = generateDateOffsetDateTime(offsetDateTimeRule.time());
                 } else {
-                    value = generateRandomValue(field, fixedValues);
+                    value = generateValue(field.getType(), field, fixedValues);
                 }
 
                 field.set(instance, value);
@@ -90,39 +92,50 @@ public class RandomModelGenerator {
         return fields;
     }
 
-    private static List<Field> getOptionalFields(Class<?> clazz) {
-        List<Field> optional = new ArrayList<>();
-        for (Field field : getAllFields(clazz)) {
-            if (field.getAnnotation(Optional.class) != null) {
-                optional.add(field);
+    private static Object generateValue(Class<?> type, Field field, Map<String, Object> fixedValues) {
+        // ===== аннотации (если есть поле) =====
+        if (field != null) {
+            GeneratingStringRule stringRule = field.getAnnotation(GeneratingStringRule.class);
+            GeneratingDoubleRule doubleRule = field.getAnnotation(GeneratingDoubleRule.class);
+            GeneratingOffsetDateTimeRule offsetDateTimeRule = field.getAnnotation(GeneratingOffsetDateTimeRule.class);
+
+            if (stringRule != null) {
+                return generateFromRegex(stringRule.regex(), type);
+            } else if (doubleRule != null) {
+                return generateFromDoubleRule(doubleRule, type);
+            } else if (offsetDateTimeRule != null) {
+                return generateDateOffsetDateTime(offsetDateTimeRule.time());
             }
         }
-        return optional;
-    }
 
-    private static Object generateRandomValue(Field field, Map<String, Object> fixedValues) {
-        Class<?> type = field.getType();
+        // ===== обычная генерация по типу =====
+        if (type.equals(List.class) && field != null) {
+            return generateList(field, fixedValues);
+        }
 
-        return switch (type) {
-            case Class<?> c when c.equals(List.class) -> generateList(field, fixedValues);
-            case Class<?> c when c.equals(Gender.class) -> randomEnum(Gender.class);
-            case Class<?> c when c.equals(String.class) -> {
-                if (field.getName().toLowerCase().contains("postal")) {
-                    yield String.format("%05d", 10000 + random.nextInt(90000));
-                }
-                yield UUID.randomUUID().toString().substring(0, 8);
+        if (type.isEnum()) {
+            return randomEnum((Class<? extends Enum<?>>) type);
+        }
+
+        if (type.equals(String.class)) {
+            if (field != null && field.getName().toLowerCase().contains("postal")) {
+                return String.format("%05d", 10000 + random.nextInt(90000));
             }
-            case Class<?> c when c.equals(Integer.class) || c.equals(int.class) -> random.nextInt(1000);
-            case Class<?> c when c.equals(Long.class) || c.equals(long.class) -> random.nextLong();
-            case Class<?> c when c.equals(Double.class) || c.equals(double.class) -> random.nextDouble() * 100;
-            case Class<?> c when c.equals(Float.class) || c.equals(float.class) -> random.nextFloat() * 100;
-            case Class<?> c when c.equals(Boolean.class) || c.equals(boolean.class) -> random.nextBoolean();
-            case Class<?> c when c.equals(OffsetDateTime.class) -> generateDateOffsetDateTime(true);
-            case Class<?> c when c.equals(Date.class) ->
-                    new Date(System.currentTimeMillis() - random.nextInt(1000000000));
-            default -> generate(type, fixedValues);
-        };
+            return UUID.randomUUID().toString().substring(0, 8);
+        }
+
+        if (type.equals(Integer.class) || type.equals(int.class)) return random.nextInt(1000);
+        if (type.equals(Long.class) || type.equals(long.class)) return random.nextLong();
+        if (type.equals(Double.class) || type.equals(double.class)) return random.nextDouble() * 100;
+        if (type.equals(Float.class) || type.equals(float.class)) return random.nextFloat() * 100;
+        if (type.equals(Boolean.class) || type.equals(boolean.class)) return random.nextBoolean();
+        if (type.equals(OffsetDateTime.class)) return generateDateOffsetDateTime(true);
+        if (type.equals(Date.class)) return new Date(System.currentTimeMillis() - random.nextInt(1_000_000_000));
+
+        // ===== вложенный объект =====
+        return generate(type, fixedValues);
     }
+
 
     private static Object generateFromRegex(String regex, Class<?> type) {
         RgxGen rgxGen = new RgxGen(regex);
@@ -140,26 +153,19 @@ public class RandomModelGenerator {
         }
     }
 
-    private static List<String> generateRandomList(Field field) {
-        Type genericType = field.getGenericType();
-        if (genericType instanceof ParameterizedType pt && pt.getActualTypeArguments()[0] == String.class) {
-            return List.of(
-                    UUID.randomUUID().toString().substring(0, 5),
-                    UUID.randomUUID().toString().substring(0, 5)
-            );
-        }
-        return Collections.emptyList();
-    }
-
     private static List<Object> generateList(Field field, Map<String, Object> fixedValues) {
         Type genericType = field.getGenericType();
+
         if (genericType instanceof ParameterizedType pt) {
             Type itemType = pt.getActualTypeArguments()[0];
+
             if (itemType instanceof Class<?> itemClass) {
                 int count = random.nextInt(3) + 1; // 1–3 элемента
                 List<Object> list = new ArrayList<>();
+
                 for (int i = 0; i < count; i++) {
-                    list.add(generate(itemClass, fixedValues));
+                    //list.add(generate(itemClass, fixedValues));
+                    list.add(generateValue(itemClass, null, fixedValues));
                 }
                 return list;
             }
@@ -192,8 +198,8 @@ public class RandomModelGenerator {
                 .withNano(0);
     }
 
-    private static <E extends Enum<E>> E randomEnum(Class<E> enumClass) {
-        E[] values = enumClass.getEnumConstants();
+    private static Enum<?> randomEnum(Class<? extends Enum<?>> enumClass) {
+        Enum<?>[] values = enumClass.getEnumConstants();
         return values[random.nextInt(values.length)];
     }
 }
