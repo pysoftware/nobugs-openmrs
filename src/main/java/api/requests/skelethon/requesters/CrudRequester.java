@@ -10,6 +10,7 @@ import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static io.restassured.RestAssured.given;
@@ -91,10 +92,21 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
 
     @Override
     public ValidatableResponse getAll(Class<?> clazz) {
-        return given()
-                .spec(requestSpecification)
+        return getAll(clazz, null);
+    }
+
+    @Override
+    public ValidatableResponse getAll(Class<?> clazz, Map<String, ?> queryParams) {
+        RequestSpecification spec = given().spec(requestSpecification);
+
+        if (queryParams != null) {
+            spec.queryParams(queryParams);
+        }
+
+        return spec
                 .get(endpoint.getUrl())
-                .then().assertThat()
+                .then()
+                .assertThat()
                 .spec(responseSpecification);
     }
 }

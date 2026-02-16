@@ -11,6 +11,9 @@ import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 import common.storage.SessionStorage;
 
+import java.util.List;
+import java.util.Map;
+
 public class PersonSteps {
     public static PersonResponse createPerson(PersonCreateRequest request) {
         PersonResponse response = new ValidatedCrudRequester<PersonResponse>(
@@ -28,6 +31,7 @@ public class PersonSteps {
         PersonCreateRequest request = RandomModelGenerator.generate(PersonCreateRequest.class);
         return createPerson(request);
     }
+
     public static PersonResponse getPerson(String uuid) {
         return new ValidatedCrudRequester<PersonResponse>(
                 RequestSpec.adminSpec(),
@@ -36,6 +40,16 @@ public class PersonSteps {
         ).get(uuid);
 
     }
+
+    public static List<PersonResponse> getAllPersons(){
+        var params = Map.<String, Object>of("q", " ");
+        return new ValidatedCrudRequester<PersonResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.PERSON,
+                ResponseSpec.requestReturnsOk()
+        ).getAll(PersonResponse.class, params);
+    }
+
     public static PersonAddressResponse createAddressPerson(PersonAddressCreateRequest request, String uuid) {
         PersonAddressResponse response = new ValidatedCrudRequester<PersonAddressResponse>(
                 RequestSpec.adminSpec(),

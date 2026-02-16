@@ -1,15 +1,17 @@
 package api.requests.skelethon.requesters;
 
-import api.requests.skelethon.interfaces.GetAllEndpointInterface;
-import io.restassured.specification.RequestSpecification;
-import io.restassured.specification.ResponseSpecification;
 import api.models.BaseModel;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.HttpRequest;
 import api.requests.skelethon.interfaces.CrudEndpointInterface;
+import api.requests.skelethon.interfaces.GetAllEndpointInterface;
+import io.restassured.response.ValidatableResponse;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest implements CrudEndpointInterface, GetAllEndpointInterface {
     CrudRequester crudRequester;
@@ -49,7 +51,13 @@ public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest imp
 
     @Override
     public List<T> getAll(Class<?> clazz) {
-        T[] array =  (T[]) crudRequester.getAll(clazz).extract().as(clazz);
-        return Arrays.asList(array);
+        return getAll(clazz, null);
+    }
+
+    public List<T> getAll(Class<?> clazz, Map<String, ?> queryParams) {
+        ValidatableResponse response = crudRequester.getAll(clazz, queryParams);
+        @SuppressWarnings("unchecked")
+        List<T> list = response.extract().jsonPath().getList("results", (Class<T>) clazz);
+        return list != null ? list : Collections.emptyList();
     }
 }

@@ -16,6 +16,7 @@ public class PersonAddressCreateRequest extends BaseModel {
     private String cityVillage;
     private String stateProvince;
     private String postalCode;
+    private Boolean preferred = true;
     private OffsetDateTime latitude;
     private OffsetDateTime longitude;
 }
