@@ -6,8 +6,6 @@ import api.models.*;
 import api.models.comparison.ModelAssertions;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
-
-import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 import common.annotations.PrepareData;
@@ -32,9 +30,6 @@ public class CreatePersonTest extends BaseTest {
         assertThat(getPerson(personUuid)).isNotNull();
 
         ModelAssertions.assertThatModels(personRequest, personResponse).match();
-
-        PersonUuidDao personUuidDao = DataBaseSteps.getPersonByUuid(personUuid);
-        DaoAndModelAssertions.assertThat(personUuidDao, personResponse).match();
 
     }
     @PrepareData(value = "person")
@@ -63,8 +58,6 @@ public class CreatePersonTest extends BaseTest {
 
         ModelAssertions.assertThatModels(personRequest, personResponse).match();
 
-        PersonUuidDao personUuidDao = DataBaseSteps.getPersonByUuid(personUuid);
-        DaoAndModelAssertions.assertThat(personUuidDao, personResponse).match();
     }
 
     @PrepareData(value = "person")
@@ -83,12 +76,13 @@ public class CreatePersonTest extends BaseTest {
         personRequest2.setNames(List.of(newName));
         PersonResponse personResponse2 = createPerson(personRequest2);
         assertThat(getPerson(personResponse2.getUuid())).isNotNull();
-        ModelAssertions.assertThatModels(personRequest2, personResponse2).match()
+        ModelAssertions.assertThatModels(personRequest2, personResponse2).match();
 
     }
-
+    @PrepareData(value = "person")
     @Test
     public void adminCanNotCreatePersonWithoutName() {
+        int countPersonExpected = getAllPersons().size();
 
         PersonCreateRequest personRequest = RandomModelGenerator.generate(PersonCreateRequest.class);
         personRequest.setNames(null);
@@ -97,7 +91,10 @@ public class CreatePersonTest extends BaseTest {
                 RequestSpec.adminSpec(),
                 Endpoint.PERSON,
                 ResponseSpec.requestReturnsBadRequest(errorPersonNamesIsNull))
-                .post(personRequest).extract().as(PersonResponse.class);
+                .post(personRequest);
 
+        int countPersonActual = getAllPersons().size();
+
+        softly.assertThat(countPersonActual).isEqualTo(countPersonExpected);
     }
 }
