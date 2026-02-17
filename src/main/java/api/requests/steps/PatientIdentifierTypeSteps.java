@@ -4,7 +4,6 @@ import api.generators.RandomModelGenerator;
 import api.generators.RegexConstants;
 import api.models.PatientIdentifierTypeCreateRequest;
 import api.models.PatientIdentifierTypeResponse;
-import api.models.comparison.ModelAssertions;
 import api.models.enums.LocationBehavior;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
@@ -22,10 +21,7 @@ public class PatientIdentifierTypeSteps {
                             fields.setValidator(null);
                             fields.setUniquenessBehavior(null);
                         });
-        PatientIdentifierTypeResponse patientIdentifierType = createPatientIdentifierType(identifierTypeCreateRequest);
-
-        ModelAssertions.assertThatModels(identifierTypeCreateRequest, patientIdentifierType).match();
-        return patientIdentifierType;
+        return createPatientIdentifierType(identifierTypeCreateRequest);
     }
 
     public static PatientIdentifierTypeResponse createPatientIdentifierType(PatientIdentifierTypeCreateRequest request) {

@@ -1,5 +1,6 @@
 package api.database.dao.comparison;
 
+import api.models.BaseModel;
 import org.opentest4j.AssertionFailedError;
 
 public final class DaoAndModelAssertions {
@@ -18,7 +19,7 @@ public final class DaoAndModelAssertions {
         // утилитный класс — не инстанцируется
     }
 
-    public static DaoModelAssertion assertThat(Object model, Object dao) {
+    public static DaoModelAssertion assertThat(BaseModel model, Object dao) {
         return new DaoModelAssertion(model, dao);
     }
 

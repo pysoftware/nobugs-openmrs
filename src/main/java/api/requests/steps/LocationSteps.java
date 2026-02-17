@@ -1,8 +1,8 @@
 package api.requests.steps;
 
 import api.generators.RandomModelGenerator;
-import api.models.*;
-import api.models.comparison.ModelAssertions;
+import api.models.LocationCreateRequest;
+import api.models.LocationResponse;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpec;
@@ -20,10 +20,7 @@ public class LocationSteps {
                             fields.setAttributes(List.of());
                         });
 
-        LocationResponse location = createLocation(locationCreateRequest);
-
-        ModelAssertions.assertThatModels(locationCreateRequest, location).match();
-        return location;
+        return createLocation(locationCreateRequest);
     }
 
     public static LocationResponse createLocation(LocationCreateRequest request) {

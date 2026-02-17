@@ -14,10 +14,6 @@ public @interface PrepareData {
     // Количество сущностей для создания
     int count() default 1;
 
-    // Под каким ключом сохранить список в SessionStorage
-    // По умолчанию: "prepared_{type}s" → prepared_persons, prepared_orders и т.д.
-    String storageKey() default "";
-
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
     @interface List {
