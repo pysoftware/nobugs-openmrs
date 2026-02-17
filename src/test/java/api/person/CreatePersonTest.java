@@ -9,6 +9,7 @@ import api.requests.skelethon.requesters.CrudRequester;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 import common.annotations.PrepareData;
+import common.extensions.Prepare;
 import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 
@@ -32,11 +33,11 @@ public class CreatePersonTest extends BaseTest {
         ModelAssertions.assertThatModels(personRequest, personResponse).match();
 
     }
-    @PrepareData(value = "person")
+    @PrepareData(Prepare.PERSON)
     @Test
     public void adminCanCreatePersonWithAddres() {
 
-        String personUuid = SessionStorage.getPerson(1).getUuid();
+        String personUuid = SessionStorage.get(Prepare.PERSON, 1).getUuid();
 
         PersonAddressCreateRequest personAddressCreateRequest = RandomModelGenerator.generate(PersonAddressCreateRequest.class);
         PersonAddressResponse personAddressResponse = createAddressPerson(personAddressCreateRequest, personUuid);
@@ -60,10 +61,10 @@ public class CreatePersonTest extends BaseTest {
 
     }
 
-    @PrepareData(value = "person")
+    @PrepareData(Prepare.PERSON)
     @Test
     public void adminCanCreatePersonWithSameName() {
-        PersonResponse personResponse1 = SessionStorage.getPerson(1);
+        PersonResponse personResponse1 = SessionStorage.get(Prepare.PERSON, 1);
         String given = personResponse1.getPreferredName().getGivenName();
         String family = personResponse1.getPreferredName().getFamilyName();
 
@@ -79,7 +80,7 @@ public class CreatePersonTest extends BaseTest {
         ModelAssertions.assertThatModels(personRequest2, personResponse2).match();
 
     }
-    @PrepareData(value = "person")
+    @PrepareData(Prepare.PERSON)
     @Test
     public void adminCanNotCreatePersonWithoutName() {
         int countPersonExpected = getAllPersons().size();

@@ -1,6 +1,7 @@
 package api.requests.skelethon;
 
 import api.models.*;
+import common.extensions.Prepare;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,56 +12,47 @@ public enum Endpoint {
     LOGIN(
             "/session",
             LoginRequest.class,
-            LoginResponse.class,
-            null
+            LoginResponse.class
     ),
 
     PERSON(
             "/person",
             PersonCreateRequest.class,
-            PersonResponse.class,
-            "person"
+            PersonResponse.class
     ),
 
     PERSON_ADDRES(
             "/person",
             PersonAddressCreateRequest.class,
-            PersonAddressResponse.class,
-            "person"
+            PersonAddressResponse.class
     ),
 
     PATIENT(
             "/patient",
             PatientCreateNewRequest.class,
-            PatientResponse.class,
-            "patient"
+            PatientResponse.class
     ),
 
     PATIENT_IDENTIFIER_TYPE(
             "/patientidentifiertype",
             PatientIdentifierTypeCreateRequest.class,
-            PatientIdentifierTypeResponse.class,
-            null
+            PatientIdentifierTypeResponse.class
     ),
 
     LOCATION(
             "/location",
             LocationCreateRequest.class,
-            LocationResponse.class,
-            null
+            LocationResponse.class
     );
 
     private final String url;
     private final Class<? extends BaseModel> requestModel;
     private final Class<? extends BaseModel> responseModel;
-    private final String entityType;   // null для служебных эндпоинтов (LOGIN и т.п.)
 
-    public static Endpoint findByEntityType(String type) {
+    public static Endpoint findByResponseModel(Prepare type) {
         if (type == null) return null;
-        String normalized = type.toLowerCase().trim();
-
         for (Endpoint e : values()) {
-            if (normalized.equals(e.entityType)) {
+            if (type.getModel().equals(e.responseModel)) {
                 return e;
             }
         }
