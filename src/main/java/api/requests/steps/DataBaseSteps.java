@@ -1,6 +1,8 @@
 package api.requests.steps;
 
+import api.database.dao.LocationDao;
 import api.database.dao.PatientDao;
+import api.database.dao.PatientIdentifierTypeDao;
 import api.database.dbrequest.Condition;
 import api.database.dbrequest.DBRequest;
 import api.database.dbrequest.InnerJoin;
@@ -10,7 +12,9 @@ public class DataBaseSteps {
     @Getter
     public enum Table {
         PERSON("person"),
-        PATIENT("patient");
+        PATIENT("patient"),
+        PATIENT_IDENTIFIER_TYPE("patient_identifier_type"),
+        LOCATION("location");
 
         Table(String name) {
             this.name = name;
@@ -29,4 +33,21 @@ public class DataBaseSteps {
                 .extractAs(PatientDao.class);
     }
 
+    // PatientIdentifierType
+    public static PatientIdentifierTypeDao getPatientIdentifierTypeByUuid(String uuid) {
+        return DBRequest.builder()
+                .requestType(DBRequest.RequestType.SELECT)
+                .table(Table.PATIENT_IDENTIFIER_TYPE.getName())
+                .where(Condition.equalTo("uuid", uuid))
+                .extractAs(PatientIdentifierTypeDao.class);
+    }
+
+    // Location
+    public static LocationDao getLocationByUuid(String uuid) {
+        return DBRequest.builder()
+                .requestType(DBRequest.RequestType.SELECT)
+                .table(Table.LOCATION.getName())
+                .where(Condition.equalTo("uuid", uuid))
+                .extractAs(LocationDao.class);
+    }
 }
