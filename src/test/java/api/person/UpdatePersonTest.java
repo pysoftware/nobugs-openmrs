@@ -10,15 +10,16 @@ import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 import common.annotations.PrepareData;
+import common.extensions.Prepare;
 import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 
 public class UpdatePersonTest extends BaseTest {
-    @PrepareData(value = "person")
+    @PrepareData(Prepare.PERSON)
     @Test
     public void adminCanCreatePersonWithCorrectData() {
 
-        String uuidPerson = SessionStorage.getPerson(1).getUuid();
+        String uuidPerson = SessionStorage.get(Prepare.PERSON, 1).getUuid();
         PersonUpdateRequest personUpdate = RandomModelGenerator.generate(PersonUpdateRequest.class);
 
         PersonResponse personResponse = new ValidatedCrudRequester<PersonResponse>(

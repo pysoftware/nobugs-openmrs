@@ -1,5 +1,6 @@
 package api.models;
 
+import api.models.interfaces.HasUuid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 // Search, Create, Update
-public class PatientResponse extends BaseModel {
+public class PatientResponse extends BaseModel implements HasUuid {
     private String uuid;
     private String display;
     private List<IdentifierResponse> identifiers;

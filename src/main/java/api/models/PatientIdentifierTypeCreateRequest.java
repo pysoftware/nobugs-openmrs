@@ -2,6 +2,7 @@ package api.models;
 
 import api.generators.RegexConstants;
 import api.generators.annotations.GeneratingStringRule;
+import api.models.enums.LocationBehavior;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,6 @@ public class PatientIdentifierTypeCreateRequest extends BaseModel {
     private String formatDescription;
     private Boolean required;
     private String validator;
-    private String locationBehavior;
+    private LocationBehavior locationBehavior;
     private String uniquenessBehavior;
 }

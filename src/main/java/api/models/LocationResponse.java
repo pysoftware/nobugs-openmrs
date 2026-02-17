@@ -1,5 +1,6 @@
 package api.models;
 
+import api.models.interfaces.HasUuid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LocationResponse extends BaseModel {
+public class LocationResponse extends BaseModel implements HasUuid {
     private String uuid;
     private String display;
     private String name;
