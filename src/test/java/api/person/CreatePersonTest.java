@@ -65,21 +65,25 @@ public class CreatePersonTest extends BaseTest {
     @Test
     public void adminCanCreatePersonWithSameName() {
         PersonResponse personResponse1 = SessionStorage.get(Prepare.PERSON, 1);
-        String given = personResponse1.getPreferredName().getGivenName();
-        String family = personResponse1.getPreferredName().getFamilyName();
 
-        PersonCreateRequest personRequest2 = RandomModelGenerator.generate(PersonCreateRequest.class);
-        PersonName newName = PersonName.builder()
-                .givenName(given)
-                .familyName(family)
-                .build();
+        String[] names = parseDisplay(personResponse1.getPreferredName().getDisplay());
 
-        personRequest2.setNames(List.of(newName));
-        PersonResponse personResponse2 = createPerson(personRequest2);
+        PersonCreateRequest request = RandomModelGenerator.generate(PersonCreateRequest.class,
+                fields -> {
+                    fields.setNames(List.of(
+                            PersonName.builder()
+                                    .givenName(names[0])
+                                    .familyName(names[1])
+                                    .build()
+                    ));
+
+                });
+        PersonResponse personResponse2 = createPerson(request);
         assertThat(getPerson(personResponse2.getUuid())).isNotNull();
-        ModelAssertions.assertThatModels(personRequest2, personResponse2).match();
+        ModelAssertions.assertThatModels(request, personResponse2).match();
 
     }
+
     @PrepareData(Prepare.PERSON)
     @Test
     public void adminCanNotCreatePersonWithoutName() {
