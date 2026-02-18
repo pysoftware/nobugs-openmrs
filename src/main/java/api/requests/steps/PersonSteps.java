@@ -60,4 +60,13 @@ public class PersonSteps {
         return response;
     }
 
+    public static List<PersonAddressResponse> getAllPersonAddress(){
+        var params = Map.<String, Object>of("q", " ");
+        return new ValidatedCrudRequester<PersonAddressResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.PERSON_ADDRES ,
+                ResponseSpec.requestReturnsOk()
+        ).getAll(PersonAddressResponse.class, params);
+    }
+
 }

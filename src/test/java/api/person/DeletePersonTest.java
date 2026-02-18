@@ -10,18 +10,23 @@ import common.extensions.Prepare;
 import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 
+import static api.requests.steps.PersonSteps.getPerson;
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class DeletePersonTest extends BaseTest {
     @PrepareData(Prepare.PERSON)
     @Test
-    public void adminCanNotCreatePersonWithoutName() {
+    public void adminCanDeletePerson() {
 
-        String uuidPerson = SessionStorage.get(Prepare.PERSON, 1).getUuid();
+        String personUuid = SessionStorage.get(Prepare.PERSON, 1).getUuid();
 
         new CrudRequester(
                 RequestSpec.adminSpec(),
                 Endpoint.PERSON,
                 ResponseSpec.requestReturnsNoContent())
-                .delete(uuidPerson);
+                .delete(personUuid);
+
+        assertThat(getPerson(personUuid)).isNull();
     }
 
 }
