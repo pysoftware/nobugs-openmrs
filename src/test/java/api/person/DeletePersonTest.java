@@ -10,8 +10,8 @@ import common.extensions.Prepare;
 import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 
-import static api.requests.steps.PersonSteps.getPerson;
-import static org.assertj.core.api.Assertions.assertThat;
+import static api.requests.steps.PersonSteps.getNotExistPerson;
+import static api.specs.ResponseSpec.errorPersonNotExist;
 
 public class DeletePersonTest extends BaseTest {
     @PrepareData(Prepare.PERSON)
@@ -26,7 +26,7 @@ public class DeletePersonTest extends BaseTest {
                 ResponseSpec.requestReturnsNoContent())
                 .delete(personUuid);
 
-        assertThat(getPerson(personUuid)).isNull();
+        getNotExistPerson(personUuid, errorPersonNotExist);
     }
 
 }

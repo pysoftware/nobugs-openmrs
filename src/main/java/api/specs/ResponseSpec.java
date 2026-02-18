@@ -9,8 +9,8 @@ import java.util.List;
 
 public class ResponseSpec {
     public static String errorPersonNamesIsNull = "[names on class org.openmrs.Person => Cannot invoke \"java.util.List.iterator()\" because \"personNames\" is null]";
-
-
+    public static String errorPersonAddressIsNull = "[addresses on class org.openmrs.Person => Cannot invoke \"java.util.List.iterator()\" because \"addresses\" is null]";
+    public static String errorPersonNotExist = "Object with given uuid doesn't exist [null]";
     private ResponseSpec(){}
 
     private static ResponseSpecBuilder defaultResponseBuilder(){
@@ -46,6 +46,14 @@ public class ResponseSpec {
     public static ResponseSpecification requestReturnsBadRequest(String  errorValue){
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
+                .expectBody("error.message", Matchers.containsString(errorValue))
+                .build();
+    }
+
+
+    public static ResponseSpecification requestReturnsNotFound(String  errorValue){
+        return defaultResponseBuilder()
+                .expectStatusCode(HttpStatus.SC_NOT_FOUND)
                 .expectBody("error.message", Matchers.containsString(errorValue))
                 .build();
     }

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static api.requests.steps.PersonSteps.*;
+import static api.specs.ResponseSpec.errorPersonAddressIsNull;
 import static api.specs.ResponseSpec.errorPersonNamesIsNull;
 import static api.utils.StringUtils.parseDisplay;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +50,9 @@ public class CreatePersonTest extends BaseTest {
 
         ModelAssertions.assertThatModels(personAddressCreateRequest, personAddressResponse).match();
     }
+
+
+
 
     @Test
     public void adminCanCreatePersonWithoutGender() {
@@ -99,6 +103,26 @@ public class CreatePersonTest extends BaseTest {
                 RequestSpec.adminSpec(),
                 Endpoint.PERSON,
                 ResponseSpec.requestReturnsBadRequest(errorPersonNamesIsNull))
+                .post(personRequest);
+
+        int countPersonActual = getAllPersons().size();
+
+        softly.assertThat(countPersonActual).isEqualTo(countPersonExpected);
+    }
+
+    @PrepareData(Prepare.PERSON)
+    @Test
+    public void adminCanNotCreatePersonWithoutAddress() {
+        int countPersonExpected = getAllPersons().size();
+
+        PersonCreateRequest personRequest = RandomModelGenerator.generate(PersonCreateRequest.class);
+        personRequest.setAddresses(null);
+
+
+        new CrudRequester(
+                RequestSpec.adminSpec(),
+                Endpoint.PERSON,
+                ResponseSpec.requestReturnsBadRequest(errorPersonAddressIsNull))
                 .post(personRequest);
 
         int countPersonActual = getAllPersons().size();

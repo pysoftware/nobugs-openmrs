@@ -6,6 +6,7 @@ import api.models.PersonAddressResponse;
 import api.models.PersonCreateRequest;
 import api.models.PersonResponse;
 import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
@@ -37,6 +38,15 @@ public class PersonSteps {
                 RequestSpec.adminSpec(),
                 Endpoint.PERSON,
                 ResponseSpec.requestReturnsOk()
+        ).get(uuid);
+
+    }
+
+    public static void getNotExistPerson(String uuid, String errorValue) {
+        new CrudRequester(
+                RequestSpec.adminSpec(),
+                Endpoint.PERSON,
+                ResponseSpec.requestReturnsNotFound(errorValue)
         ).get(uuid);
 
     }

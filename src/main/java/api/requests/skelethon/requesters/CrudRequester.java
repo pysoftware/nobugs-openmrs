@@ -84,7 +84,7 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
     public Object delete(String uuid) {
         return given()
                 .spec(requestSpecification)
-                .delete(endpoint.getUrl() + "/" + uuid)
+                .delete(endpoint.getUrl() + "/" + uuid + "?purge=true")
                 .then()
                 .assertThat()
                 .spec(responseSpecification);
