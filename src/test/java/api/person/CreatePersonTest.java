@@ -33,6 +33,7 @@ public class CreatePersonTest extends BaseTest {
         ModelAssertions.assertThatModels(personRequest, personResponse).match();
 
     }
+
     @PrepareData(Prepare.PERSON)
     @Test
     public void adminCanCreatePersonAddress() {

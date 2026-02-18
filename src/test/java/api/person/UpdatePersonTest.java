@@ -14,20 +14,28 @@ import common.extensions.Prepare;
 import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 
+import static api.requests.steps.PersonSteps.getPerson;
+
 public class UpdatePersonTest extends BaseTest {
     @PrepareData(Prepare.PERSON)
     @Test
     public void adminCanCreatePersonWithCorrectData() {
+        PersonResponse personResponse = SessionStorage.get(Prepare.PERSON, 1);
+        String personUuid = personResponse.getUuid();
+        String personDisplayName = personResponse.getPreferredName().getDisplay();
+        String personDisplayAddress = personResponse.getPreferredAddress().getDisplay();
 
-        String uuidPerson = SessionStorage.get(Prepare.PERSON, 1).getUuid();
         PersonUpdateRequest personUpdate = RandomModelGenerator.generate(PersonUpdateRequest.class);
 
-        PersonResponse personResponse = new ValidatedCrudRequester<PersonResponse>(
+        PersonResponse personResponseUpdate = new ValidatedCrudRequester<PersonResponse>(
                 RequestSpec.adminSpec(),
                 Endpoint.PERSON,
                 ResponseSpec.requestReturnsOk())
-                .update(personUpdate, uuidPerson);
+                .update(personUpdate, personUuid);
 
-        ModelAssertions.assertThatModels(personUpdate, personResponse).match();
+        softly.assertThat(getPerson(personUuid).getPreferredAddress().getDisplay()).isNotEqualTo(personDisplayName);
+        softly.assertThat(getPerson(personUuid).getPreferredName().getDisplay()).isNotEqualTo(personDisplayAddress);
+
+        ModelAssertions.assertThatModels(personUpdate, personResponseUpdate).match();
     }
 }
