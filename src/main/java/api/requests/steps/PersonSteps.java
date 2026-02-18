@@ -60,4 +60,24 @@ public class PersonSteps {
         return response;
     }
 
+    public static List<PersonAddressResponse> getAllPersonAddress(){
+        var params = Map.<String, Object>of("q", " ");
+        return new ValidatedCrudRequester<PersonAddressResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.PERSON_ADDRES ,
+                ResponseSpec.requestReturnsOk()
+        ).getAll(PersonAddressResponse.class, params);
+    }
+
+    public static String[] parseDisplay(String display) {
+        if (display == null || display.trim().isEmpty()) {
+            return new String[]{"", ""};
+        }
+        String[] parts = display.trim().split("\\s+", 2);
+        return new String[]{
+                parts[0],
+                parts.length == 2 ? parts[1] : ""
+        };
+    }
+
 }
