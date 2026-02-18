@@ -17,6 +17,7 @@ import java.util.List;
 
 import static api.requests.steps.PersonSteps.*;
 import static api.specs.ResponseSpec.errorPersonNamesIsNull;
+import static api.utils.StringUtils.parseDisplay;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CreatePersonTest extends BaseTest {
