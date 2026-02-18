@@ -35,14 +35,15 @@ public class CreatePersonTest extends BaseTest {
     }
     @PrepareData(Prepare.PERSON)
     @Test
-    public void adminCanCreatePersonWithAddres() {
+    public void adminCanCreatePersonAddress() {
 
         String personUuid = SessionStorage.get(Prepare.PERSON, 1).getUuid();
 
-        PersonAddressCreateRequest personAddressCreateRequest = RandomModelGenerator.generate(PersonAddressCreateRequest.class);
+        PersonAddressCreateRequest personAddressCreateRequest = RandomModelGenerator.generate(PersonAddressCreateRequest.class,
+                fields -> fields.setPreferred(true));
         PersonAddressResponse personAddressResponse = createAddressPerson(personAddressCreateRequest, personUuid);
 
-        assertThat(getPerson(personUuid).getPreferredAddress().getAddress1()).isEqualTo(personAddressResponse.getAddress1());
+        assertThat(getPerson(personUuid).getPreferredAddress().getDisplay()).isEqualTo(personAddressResponse.getAddress1());
 
         ModelAssertions.assertThatModels(personAddressCreateRequest, personAddressResponse).match();
     }
