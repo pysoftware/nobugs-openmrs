@@ -22,15 +22,21 @@ public enum Endpoint {
     ),
 
     PERSON_ADDRES(
-            "/person",
+            "/person/{uuid}/address",
             PersonAddressCreateRequest.class,
             PersonAddressResponse.class
     ),
 
     PATIENT(
             "/patient",
-            PatientCreateNewRequest.class,
+            PatientCreateRequest.class,
             PatientResponse.class
+    ),
+
+    PATIENT_IDENTIFIER(
+            "/patient/{uuid}/identifier",
+            PatientIdentifierCreateRequest.class,
+            PatientIdentifierResponse.class
     ),
 
     PATIENT_IDENTIFIER_TYPE(

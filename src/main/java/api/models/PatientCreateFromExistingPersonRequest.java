@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PatientCreateFromExistingPersonRequest extends BaseModel {
+public final class PatientCreateFromExistingPersonRequest extends PatientCreateRequest {
     private String person;
     private List<IdentifierRequest> identifiers;
 }

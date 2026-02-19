@@ -9,17 +9,11 @@ import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 import common.storage.SessionStorage;
 import io.restassured.response.ValidatableResponse;
-import io.restassured.specification.ResponseSpecification;
+
+import java.util.List;
+import java.util.Map;
 
 public class PatientSteps {
-    private static PatientResponse createPatient(PatientCreateNewRequest request, ResponseSpecification responseSpecification) {
-        return new ValidatedCrudRequester<PatientResponse>(
-                RequestSpec.adminSpec(),
-                Endpoint.PATIENT,
-                responseSpecification
-        ).post(request);
-    }
-
     public static PatientResponse createPatient() {
         PatientIdentifierTypeResponse patientIdentifierType = PatientIdentifierTypeSteps.createPatientIdentifierType();
         SessionStorage.add(patientIdentifierType);
@@ -31,6 +25,7 @@ public class PatientSteps {
                             for (IdentifierRequest identifier : fields.getIdentifiers()) {
                                 identifier.setIdentifierType(patientIdentifierType.getUuid());
                                 identifier.setLocation(location.getUuid());
+                                identifier.setPreferred(false);
                             }
                             Person person = fields.getPerson();
                             person.setDead(false);
@@ -40,14 +35,39 @@ public class PatientSteps {
         return createPatient(patientRequest);
     }
 
-    public static PatientResponse createPatient(PatientCreateNewRequest request) {
-        PatientResponse patient = createPatient(request, ResponseSpec.entityWasCreatad());
+    public static PatientResponse createPatient(PatientCreateRequest request) {
+        PatientResponse patient = new ValidatedCrudRequester<PatientResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.PATIENT,
+                ResponseSpec.entityWasCreated()
+        ).post(request);
+
         SessionStorage.add(patient);
         return patient;
     }
 
-    public static PatientResponse createPatientFailed(PatientCreateNewRequest request) {
-        return createPatient(request, ResponseSpec.requestReturnsForbiddenRequest());
+    public static void createPatientFailed(PatientCreateRequest request) {
+        new CrudRequester(
+                RequestSpec.adminSpec(),
+                Endpoint.PATIENT,
+                ResponseSpec.requestReturnsBadRequest(ErrorMessages.IDENTIFIER_TYPE_IS_NULL)
+        ).post(request);
+    }
+
+    public static void deletePatient(boolean purge, String uuid) {
+        new CrudRequester(
+                RequestSpec.adminSpec(),
+                Endpoint.PATIENT,
+                ResponseSpec.requestReturnsNoContent()
+        ).delete(purge, uuid);
+    }
+
+    public static void deletePatientFailed(boolean purge, String uuid) {
+        new CrudRequester(
+                RequestSpec.adminSpec(),
+                Endpoint.PATIENT,
+                ResponseSpec.requestReturnsNotFound(ErrorMessages.OBJECT_DOES_NOT_EXIST)
+        ).delete(purge, uuid);
     }
 
     public static ValidatableResponse hasPatient(String uuid) {
@@ -56,5 +76,14 @@ public class PatientSteps {
                 Endpoint.PATIENT,
                 ResponseSpec.requestReturnsOk())
                 .get(uuid);
+    }
+
+    public static List<PatientResponse> getPatientsByName(String name) {
+        var params = Map.<String, Object>of("q", name);
+        return new ValidatedCrudRequester<PatientResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.PATIENT,
+                ResponseSpec.requestReturnsOk()
+        ).getAll(PatientResponse.class, params);
     }
 }

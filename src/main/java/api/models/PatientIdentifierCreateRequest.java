@@ -1,5 +1,7 @@
 package api.models;
 
+import api.generators.RegexConstants;
+import api.generators.annotations.GeneratingStringRule;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PatientUpdateRequest extends BaseModel {
+public class PatientIdentifierCreateRequest extends BaseModel {
+    @GeneratingStringRule(regex = RegexConstants.PATIENT_IDENTIFIER_TYPE_FORMAT)
     private String identifier;
     private String identifierType;
     private String location;

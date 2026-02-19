@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 // Search, Create, Update
-public class PatientIdentifierSubResourcesResponse extends BaseModel {
+public class PatientIdentifierResponse extends BaseModel {
     private String display;
     private String uuid;
     private String identifier;

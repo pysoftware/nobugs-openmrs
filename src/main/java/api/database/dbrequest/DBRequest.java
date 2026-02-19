@@ -24,6 +24,7 @@ public class DBRequest {
     private List<Condition> conditions = new ArrayList<>();
     private String customSql;
     private Class<?> extractAsClass;
+    private boolean count;
 
 
     public enum RequestType {
@@ -81,7 +82,7 @@ public class DBRequest {
             throw new UnsupportedOperationException("Автоматическая генерация SQL поддерживается только для SELECT");
         }
 
-        StringBuilder sb = new StringBuilder("SELECT * FROM ").append(table);
+        StringBuilder sb = new StringBuilder(count ? "SELECT COUNT(*) AS COUNT FROM " : "SELECT * FROM ").append(table);
 
         if (!innerJoins.isEmpty()) {
 
@@ -121,6 +122,7 @@ public class DBRequest {
         private String table;
         private List<InnerJoin> innerJoins = new ArrayList<>();
         private List<Condition> conditions = new ArrayList<>();
+        private Boolean count = false;
 
         public DBRequestBuilder table(String table) {
             this.table = table;
@@ -137,6 +139,11 @@ public class DBRequest {
             return this;
         }
 
+        public DBRequestBuilder count(boolean count) {
+            this.count = count;
+            return this;
+        }
+
         public <T> T extractAs(Class<T> clazz) {
             this.extractAsClass = clazz;
             DBRequest request = DBRequest.builder()
@@ -145,6 +152,7 @@ public class DBRequest {
                     .innerJoins(innerJoins)
                     .conditions(conditions)
                     .extractAsClass(extractAsClass)
+                    .count(count)
                     .build();
             return request.extractAs(clazz);
         }
