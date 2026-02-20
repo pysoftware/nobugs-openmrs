@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-// Search, Create, Update
+// Search, Create
 public class PatientResponse extends BaseModel implements HasUuid {
     private String uuid;
     private String display;

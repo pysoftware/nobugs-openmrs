@@ -19,7 +19,7 @@ public class PersonSteps {
         PersonResponse response = new ValidatedCrudRequester<PersonResponse>(
                 RequestSpec.adminSpec(),
                 Endpoint.PERSON,
-                ResponseSpec.entityWasCreatad()
+                ResponseSpec.entityWasCreated()
         ).post(request);
 
         SessionStorage.add(response);
@@ -54,7 +54,7 @@ public class PersonSteps {
         PersonAddressResponse response = new ValidatedCrudRequester<PersonAddressResponse>(
                 RequestSpec.adminSpec(),
                 Endpoint.PERSON_ADDRES,
-                ResponseSpec.entityWasCreatad()
+                ResponseSpec.entityWasCreated()
         ).post(request, uuid);
 
         return response;
