@@ -1,6 +1,5 @@
 package api.specs;
 
-import api.requests.steps.ErrorMessages;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.http.HttpStatus;
@@ -40,20 +39,26 @@ public class ResponseSpec {
                 .build();
     }
 
-    public static ResponseSpecification requestReturnsNotFound(ErrorMessages errorValue){
+    public static ResponseSpecification requestReturnsNotFound(String errorValue){
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_NOT_FOUND)
-                .expectBody("error.message", Matchers.containsString(errorValue.toString()))
+                .expectBody("error.message", Matchers.containsString(errorValue))
                 .build();
     }
 
-    public static ResponseSpecification requestReturnsBadRequest(ErrorMessages errorValue){
+    public static ResponseSpecification requestReturnsBadRequest(String errorValue){
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
-                .expectBody("error.message", Matchers.containsString(errorValue.toString()))
+                .expectBody("error.message", Matchers.containsString(errorValue))
                 .build();
     }
 
+    public static ResponseSpecification requestReturnsInternalServerError(String errorValue){
+        return defaultResponseBuilder()
+                .expectStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+                .expectBody("error.message", Matchers.containsString(errorValue))
+                .build();
+    }
     public static ResponseSpecification requestReturnsForbiddenRequest(){
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_FORBIDDEN)

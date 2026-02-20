@@ -98,7 +98,7 @@ public class CreatePersonTest extends BaseTest {
         new CrudRequester(
                 RequestSpec.adminSpec(),
                 Endpoint.PERSON,
-                ResponseSpec.requestReturnsBadRequest(ErrorMessages.PERSON_NAME_IS_NULL))
+                ResponseSpec.requestReturnsBadRequest(ErrorMessages.PERSON_NAME_IS_NULL.toString()))
                 .post(personRequest);
 
         int countPersonActual = getAllPersons().size();

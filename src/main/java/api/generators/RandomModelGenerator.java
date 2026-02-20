@@ -1,6 +1,7 @@
 package api.generators;
 
 import api.generators.annotations.GeneratingDoubleRule;
+import api.generators.annotations.GeneratingListRule;
 import api.generators.annotations.GeneratingOffsetDateTimeRule;
 import api.generators.annotations.GeneratingStringRule;
 import com.github.curiousoddman.rgxgen.RgxGen;
@@ -55,6 +56,7 @@ public class RandomModelGenerator {
                 GeneratingStringRule stringRule = field.getAnnotation(GeneratingStringRule.class);
                 GeneratingDoubleRule doubleRule = field.getAnnotation(GeneratingDoubleRule.class);
                 GeneratingOffsetDateTimeRule offsetDateTimeRule = field.getAnnotation(GeneratingOffsetDateTimeRule.class);
+                GeneratingListRule listRule = field.getAnnotation(GeneratingListRule.class);
 
                 if (stringRule != null) {
                     value = generateFromRegex(stringRule.regex(), field.getType());
@@ -62,6 +64,8 @@ public class RandomModelGenerator {
                     value = generateFromDoubleRule(doubleRule, field.getType());
                 } else if (offsetDateTimeRule != null) {
                     value = generateDateOffsetDateTime(offsetDateTimeRule.time());
+                } else if (listRule != null) {
+                    value = generateList(listRule.count(), field, fixedValues);
                 } else {
                     value = generateValue(field.getType(), field, fixedValues);
                 }
@@ -98,6 +102,7 @@ public class RandomModelGenerator {
             GeneratingStringRule stringRule = field.getAnnotation(GeneratingStringRule.class);
             GeneratingDoubleRule doubleRule = field.getAnnotation(GeneratingDoubleRule.class);
             GeneratingOffsetDateTimeRule offsetDateTimeRule = field.getAnnotation(GeneratingOffsetDateTimeRule.class);
+            GeneratingListRule listRule = field.getAnnotation(GeneratingListRule.class);
 
             if (stringRule != null) {
                 return generateFromRegex(stringRule.regex(), type);
@@ -105,12 +110,14 @@ public class RandomModelGenerator {
                 return generateFromDoubleRule(doubleRule, type);
             } else if (offsetDateTimeRule != null) {
                 return generateDateOffsetDateTime(offsetDateTimeRule.time());
+            } else if (listRule !=null) {
+                return generateList(listRule.count(), field, fixedValues);
             }
         }
 
         // ===== обычная генерация по типу =====
         if (type.equals(List.class) && field != null) {
-            return generateList(field, fixedValues);
+            return generateList(-1, field, fixedValues);
         }
 
         if (type.isEnum()) {
@@ -153,14 +160,14 @@ public class RandomModelGenerator {
         }
     }
 
-    private static List<Object> generateList(Field field, Map<String, Object> fixedValues) {
+    private static List<Object> generateList(int count, Field field, Map<String, Object> fixedValues) {
         Type genericType = field.getGenericType();
 
         if (genericType instanceof ParameterizedType pt) {
             Type itemType = pt.getActualTypeArguments()[0];
 
             if (itemType instanceof Class<?> itemClass) {
-                int count = random.nextInt(3) + 1; // 1–3 элемента
+                count = count < 0 ? random.nextInt(3) + 1 : count; // 1–3 элемента, если нет аннотации с количеством
                 List<Object> list = new ArrayList<>();
 
                 for (int i = 0; i < count; i++) {

@@ -13,4 +13,5 @@ import lombok.NoArgsConstructor;
 public class PatientIdentifierDao {
     private String uuid;
     private String identifier;
+    private String voidReason;
 }
