@@ -15,28 +15,30 @@ import java.util.Map;
 
 public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest implements CrudEndpointInterface, GetAllEndpointInterface {
     CrudRequester crudRequester;
+
     public ValidatedCrudRequester(RequestSpecification requestSpecification, Endpoint endpoint, ResponseSpecification responseSpecification) {
         super(requestSpecification, endpoint, responseSpecification);
-        this.crudRequester = new CrudRequester(requestSpecification, endpoint ,responseSpecification);
+        this.crudRequester = new CrudRequester(requestSpecification, endpoint, responseSpecification);
     }
 
     @Override
     public T post(BaseModel model) {
         return (T) crudRequester.post(model).extract().as(endpoint.getResponseModel());
     }
+
     @Override
-    public T post(BaseModel model, String uuid) {
-        return (T) crudRequester.post(model, uuid).extract().as(endpoint.getResponseModel());
+    public T post(BaseModel model, String... uuids) {
+        return (T) crudRequester.post(model, uuids).extract().as(endpoint.getResponseModel());
     }
 
     @Override
-    public T get(String uuid) {
-        return(T) crudRequester.get(uuid).extract().as(endpoint.getResponseModel());
+    public T get(String... uuid) {
+        return (T) crudRequester.get(uuid).extract().as(endpoint.getResponseModel());
     }
 
     @Override
     public T get() {
-        return(T) crudRequester.get().extract().as(endpoint.getResponseModel());
+        return (T) crudRequester.get().extract().as(endpoint.getResponseModel());
     }
 
     @Override
@@ -45,19 +47,33 @@ public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest imp
     }
 
     @Override
-    public Object delete(String uuid) {
+    public Object delete(String... uuid) {
+        return null;
+    }
+
+    @Override
+    public Object delete(boolean purge, String... uuid) {
         return null;
     }
 
     @Override
     public List<T> getAll(Class<?> clazz) {
-        return getAll(clazz, null);
+        return getAll(clazz, (Map<String, ?>) null);
     }
 
-    public List<T> getAll(Class<?> clazz, Map<String, ?> queryParams) {
-        ValidatableResponse response = crudRequester.getAll(clazz, queryParams);
+    private List<T> extractList(Class<?> clazz, ValidatableResponse response) {
         @SuppressWarnings("unchecked")
         List<T> list = response.extract().jsonPath().getList("results", (Class<T>) clazz);
         return list != null ? list : Collections.emptyList();
+    }
+
+    public List<T> getAll(Class<?>  clazz, Map<String, ?> queryParams) {
+        ValidatableResponse response = crudRequester.getAll(clazz, queryParams);
+        return extractList(clazz, response);
+    }
+
+    public List<T> getAll(Class<?>  clazz, String... uuids) {
+        ValidatableResponse response = crudRequester.getAll(clazz, uuids);
+        return extractList(clazz, response);
     }
 }

@@ -1,18 +1,19 @@
 package api.requests.steps;
 
-import api.database.dao.LocationDao;
-import api.database.dao.PatientDao;
-import api.database.dao.PatientIdentifierTypeDao;
+import api.database.dao.*;
 import api.database.dbrequest.Condition;
 import api.database.dbrequest.DBRequest;
 import api.database.dbrequest.InnerJoin;
 import lombok.Getter;
 
 public class DataBaseSteps {
+    public static final String VOID_REASON="web service call";
+
     @Getter
     public enum Table {
         PERSON("person"),
         PATIENT("patient"),
+        PATIENT_IDENTIFIER("patient_identifier"),
         PATIENT_IDENTIFIER_TYPE("patient_identifier_type"),
         LOCATION("location");
 
@@ -23,6 +24,15 @@ public class DataBaseSteps {
         private final String name;
     }
 
+    // Count
+    public static CountDao countRowsOfTable(Table table) {
+        return DBRequest.builder()
+                .requestType(DBRequest.RequestType.SELECT)
+                .table(table.getName())
+                .count(true)
+                .extractAs(CountDao.class);
+    }
+
     // Patient
     public static PatientDao getPatientByUuid(String uuid) {
         return DBRequest.builder()
@@ -31,6 +41,15 @@ public class DataBaseSteps {
                 .innerJoin(InnerJoin.condition(Table.PERSON.getName(), "person_id", Table.PATIENT.getName(), "patient_id"))
                 .where(Condition.equalTo(Table.PERSON.getName(), "uuid", uuid))
                 .extractAs(PatientDao.class);
+    }
+
+    // PatientIdentifier
+    public static PatientIdentifierDao getPatientIdentifierByUuid(String uuid) {
+        return DBRequest.builder()
+                .requestType(DBRequest.RequestType.SELECT)
+                .table(Table.PATIENT_IDENTIFIER.getName())
+                .where(Condition.equalTo("uuid", uuid))
+                .extractAs(PatientIdentifierDao.class);
     }
 
     // PatientIdentifierType

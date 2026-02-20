@@ -23,4 +23,5 @@ public class PatientDao {
     private Boolean deathDate;
     private LocalTime birthtime;
     private Boolean deathdateEstimated;
+    private String voidReason;
 }
