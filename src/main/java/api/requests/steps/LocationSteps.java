@@ -29,7 +29,7 @@ public class LocationSteps {
         return new ValidatedCrudRequester<LocationResponse>(
                 RequestSpec.adminSpec(),
                 Endpoint.LOCATION,
-                ResponseSpec.entityWasCreatad()
+                ResponseSpec.entityWasCreated()
         ).post(request);
     }
 

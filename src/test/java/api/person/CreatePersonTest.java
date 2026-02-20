@@ -6,6 +6,7 @@ import api.models.*;
 import api.models.comparison.ModelAssertions;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
+import api.requests.steps.ErrorMessages;
 import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 import common.annotations.PrepareData;
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static api.requests.steps.PersonSteps.*;
-import static api.specs.ResponseSpec.errorPersonAddressIsNull;
 import static api.specs.ResponseSpec.errorPersonNamesIsNull;
 import static api.utils.StringUtils.parseDisplay;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,9 +50,6 @@ public class CreatePersonTest extends BaseTest {
 
         ModelAssertions.assertThatModels(personAddressCreateRequest, personAddressResponse).match();
     }
-
-
-
 
     @Test
     public void adminCanCreatePersonWithoutGender() {

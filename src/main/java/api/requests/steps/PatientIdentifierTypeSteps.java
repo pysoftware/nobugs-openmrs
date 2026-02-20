@@ -30,7 +30,7 @@ public class PatientIdentifierTypeSteps {
         return new ValidatedCrudRequester<PatientIdentifierTypeResponse>(
                 RequestSpec.adminSpec(),
                 Endpoint.PATIENT_IDENTIFIER_TYPE,
-                ResponseSpec.entityWasCreatad()
+                ResponseSpec.entityWasCreated()
         ).post(request);
     }
 

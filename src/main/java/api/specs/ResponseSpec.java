@@ -1,5 +1,6 @@
 package api.specs;
 
+import api.requests.steps.ErrorMessages;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.http.HttpStatus;
@@ -8,16 +9,13 @@ import org.hamcrest.Matchers;
 import java.util.List;
 
 public class ResponseSpec {
-    public static String errorPersonNamesIsNull = "[names on class org.openmrs.Person => Cannot invoke \"java.util.List.iterator()\" because \"personNames\" is null]";
-    public static String errorPersonAddressIsNull = "[addresses on class org.openmrs.Person => Cannot invoke \"java.util.List.iterator()\" because \"addresses\" is null]";
-    public static String errorPersonNotExist = "Object with given uuid doesn't exist [null]";
     private ResponseSpec(){}
 
     private static ResponseSpecBuilder defaultResponseBuilder(){
         return new ResponseSpecBuilder();
     }
 
-    public static ResponseSpecification entityWasCreatad(){
+    public static ResponseSpecification entityWasCreated(){
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_CREATED)
                 .build();
@@ -40,21 +38,19 @@ public class ResponseSpec {
                 .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
                 .expectBody(errorKey, Matchers.containsInAnyOrder(errorValue.toArray()))
                 .build();
-
     }
 
-    public static ResponseSpecification requestReturnsBadRequest(String  errorValue){
+    public static ResponseSpecification requestReturnsNotFound(ErrorMessages errorValue){
         return defaultResponseBuilder()
-                .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
-                .expectBody("error.message", Matchers.containsString(errorValue))
+                .expectStatusCode(HttpStatus.SC_NOT_FOUND)
+                .expectBody("error.message", Matchers.containsString(errorValue.toString()))
                 .build();
     }
 
-
-    public static ResponseSpecification requestReturnsNotFound(String  errorValue){
+    public static ResponseSpecification requestReturnsBadRequest(ErrorMessages errorValue){
         return defaultResponseBuilder()
-                .expectStatusCode(HttpStatus.SC_NOT_FOUND)
-                .expectBody("error.message", Matchers.containsString(errorValue))
+                .expectStatusCode(HttpStatus.SC_BAD_REQUEST)
+                .expectBody("error.message", Matchers.containsString(errorValue.toString()))
                 .build();
     }
 
