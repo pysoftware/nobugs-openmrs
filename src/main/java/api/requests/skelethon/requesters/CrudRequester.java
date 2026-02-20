@@ -35,11 +35,7 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
         }
         specCustomizer.accept(spec);
 
-        return spec
-                .post(path)
-                .then()
-                .assertThat()
-                .spec(responseSpecification);
+        return execute(Method.POST, spec, path);
     }
 
     @Override
