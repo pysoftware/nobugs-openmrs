@@ -1,14 +1,13 @@
 package api.person;
 
 import api.BaseTest;
+import api.database.dao.PersonDao;
+import api.database.dao.comparison.DaoAndModelAssertions;
 import api.generators.RandomModelGenerator;
 import api.models.*;
 import api.models.comparison.ModelAssertions;
-import api.requests.skelethon.Endpoint;
-import api.requests.skelethon.requesters.CrudRequester;
+import api.requests.steps.DataBaseSteps;
 import api.requests.steps.ErrorMessages;
-import api.specs.RequestSpec;
-import api.specs.ResponseSpec;
 import common.annotations.PrepareData;
 import common.extensions.Prepare;
 import common.storage.SessionStorage;
@@ -33,6 +32,8 @@ public class CreatePersonTest extends BaseTest {
 
         ModelAssertions.assertThatModels(personRequest, personResponse).match();
 
+        PersonDao personDao = DataBaseSteps.getPersonByUuid(personUuid);
+        DaoAndModelAssertions.assertThat(personResponse, personDao).match();
     }
 
     @PrepareData(Prepare.PERSON)
@@ -48,6 +49,9 @@ public class CreatePersonTest extends BaseTest {
         assertThat(getPerson(personUuid).getPreferredAddress().getDisplay()).isEqualTo(personAddressResponse.getAddress1());
 
         ModelAssertions.assertThatModels(personAddressCreateRequest, personAddressResponse).match();
+
+        PersonDao personDao = DataBaseSteps.getPersonByUuid(personUuid);
+        DaoAndModelAssertions.assertThat(personAddressResponse, personDao).match();
     }
 
     @Test
@@ -62,6 +66,8 @@ public class CreatePersonTest extends BaseTest {
 
         ModelAssertions.assertThatModels(personRequest, personResponse).match();
 
+        PersonDao personDao = DataBaseSteps.getPersonByUuid(personUuid);
+        DaoAndModelAssertions.assertThat(personResponse, personDao).match();
     }
 
     @PrepareData(Prepare.PERSON)
@@ -82,9 +88,13 @@ public class CreatePersonTest extends BaseTest {
 
                 });
         PersonResponse personResponse2 = createPerson(request);
+        String personUuid = personResponse2.getUuid();
+
         assertThat(getPerson(personResponse2.getUuid())).isNotNull();
         ModelAssertions.assertThatModels(request, personResponse2).match();
 
+        PersonDao personDao = DataBaseSteps.getPersonByUuid(personUuid);
+        DaoAndModelAssertions.assertThat(personResponse2, personDao).match();
     }
 
     @PrepareData(Prepare.PERSON)
@@ -95,11 +105,22 @@ public class CreatePersonTest extends BaseTest {
         PersonCreateRequest personRequest = RandomModelGenerator.generate(PersonCreateRequest.class);
         personRequest.setNames(null);
 
-        new CrudRequester(
-                RequestSpec.adminSpec(),
-                Endpoint.PERSON,
-                ResponseSpec.requestReturnsBadRequest(ErrorMessages.PERSON_NAME_IS_NULL.toString()))
-                .post(personRequest);
+        createPersonError(personRequest, ErrorMessages.PERSON_NAME_IS_NULL.toString());
+
+        int countPersonActual = getAllPersons().size();
+
+        softly.assertThat(countPersonActual).isEqualTo(countPersonExpected);
+    }
+
+    @PrepareData(Prepare.PERSON)
+    @Test
+    public void adminCanNotCreatePersonWithoutAddress() {
+        int countPersonExpected = getAllPersons().size();
+
+        PersonCreateRequest personRequest = RandomModelGenerator.generate(PersonCreateRequest.class);
+        personRequest.setAddresses(null);
+
+        createPersonError(personRequest, ErrorMessages.PERSON_ADDRESS_IS_NULL.toString());
 
         int countPersonActual = getAllPersons().size();
 
