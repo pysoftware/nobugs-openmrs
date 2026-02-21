@@ -119,7 +119,7 @@ public class PatientSteps {
     public static VisitTypeResponse createVisitType(VisitTypeCreateRequest request) {
         return new ValidatedCrudRequester<VisitTypeResponse> (
                 RequestSpec.adminSpec(),
-                Endpoint.CREATEVISITTYPE,
+                Endpoint.VISITTYPE,
                 ResponseSpec.entityWasCreated()
                 ).post(request);
     }
@@ -127,7 +127,7 @@ public class PatientSteps {
     public static VisitTypeResponse updateVisitType(VisitTypeCreateRequest request, String uuid) {
         return new ValidatedCrudRequester<VisitTypeResponse>(
                 RequestSpec.adminSpec(),
-                Endpoint.UPDATEVISITTYPE,
+                Endpoint.VISITTYPE,
                 ResponseSpec.requestReturnsOk()
         ).post(request, uuid);
     }
