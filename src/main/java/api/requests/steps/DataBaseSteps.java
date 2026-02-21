@@ -12,6 +12,8 @@ public class DataBaseSteps {
     @Getter
     public enum Table {
         PERSON("person"),
+        PERSON_NAME("person_name"),
+        PERSON_ADDRESS("person_address"),
         PATIENT("patient"),
         PATIENT_IDENTIFIER("patient_identifier"),
         PATIENT_IDENTIFIER_TYPE("patient_identifier_type"),
@@ -69,4 +71,16 @@ public class DataBaseSteps {
                 .where(Condition.equalTo("uuid", uuid))
                 .extractAs(LocationDao.class);
     }
+
+    // Person
+    public static PersonDao getPersonByUuid(String uuid) {
+        return DBRequest.builder()
+                .requestType(DBRequest.RequestType.SELECT)
+                .table(Table.PERSON.getName())
+                .innerJoin(InnerJoin.condition(Table.PERSON.getName(),"person_id", Table.PERSON_NAME.getName(), "person_id"))
+                .innerJoin(InnerJoin.condition(Table.PERSON.getName(),"person_id", Table.PERSON_ADDRESS.getName(), "person_id"))
+                .where(Condition.equalTo(Table.PERSON.getName(), "uuid", uuid))
+                .extractAs(PersonDao.class);
+    }
+
 }

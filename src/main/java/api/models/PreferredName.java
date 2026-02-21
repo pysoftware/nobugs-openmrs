@@ -20,4 +20,5 @@ public class PreferredName extends BaseModel {
     private List<Link> links;
     private String givenName;       // ← добавь
     private String familyName;
+    private Boolean preferred;
 }
