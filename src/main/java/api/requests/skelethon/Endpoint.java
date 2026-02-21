@@ -49,6 +49,22 @@ public enum Endpoint {
             "/location",
             LocationCreateRequest.class,
             LocationResponse.class
+    ),
+    VISITTYPE(
+            "/visittype?limit=1&startIndex=2&v=default",
+            BaseModel.class,
+            VisitTypeResults.class
+    ),
+
+    CREATEVISIT(
+            "/visit",
+            Visit.class,
+            VisitResponse.class
+    ),
+    CREATETAG(
+            "/locationtag",
+            CreateTagRequest.class,
+            CreateTagResponse.class
     );
 
     private final String url;

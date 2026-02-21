@@ -4,6 +4,10 @@ import api.generators.annotations.GeneratingDoubleRule;
 import api.generators.annotations.GeneratingListRule;
 import api.generators.annotations.GeneratingOffsetDateTimeRule;
 import api.generators.annotations.GeneratingStringRule;
+import api.models.CreateTagResponse;
+import api.models.LocationCreateRequest;
+import api.requests.steps.LocationSteps;
+import api.requests.steps.PersonSteps;
 import com.github.curiousoddman.rgxgen.RgxGen;
 
 import java.lang.reflect.Field;
@@ -208,5 +212,23 @@ public class RandomModelGenerator {
     private static Enum<?> randomEnum(Class<? extends Enum<?>> enumClass) {
         Enum<?>[] values = enumClass.getEnumConstants();
         return values[random.nextInt(values.length)];
+    }
+
+    public static LocationCreateRequest locationCreateGenerator() {
+
+        CreateTagResponse createTagResponse = LocationSteps.createTag();
+
+        LocationCreateRequest locationCreateRequest = new LocationCreateRequest();
+        locationCreateRequest.setName(createTagResponse.getName());
+        locationCreateRequest.setTags(List.of(createTagResponse.getUuid()));
+        locationCreateRequest.setStateProvince("California");
+        locationCreateRequest.setCountry("US");
+        locationCreateRequest.setPostalCode("12345");
+        locationCreateRequest.setCityVillage("Los Angeles");
+        locationCreateRequest.setChildLocations(List.of());
+        locationCreateRequest.setAddress1("20 Ave LS, CA");
+        locationCreateRequest.setDescription(createTagResponse.getDescription());
+        locationCreateRequest.setAttributes(List.of());
+        return locationCreateRequest;
     }
 }

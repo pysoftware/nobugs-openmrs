@@ -70,22 +70,22 @@ public class DaoModelComparator {
     }
 
     private Object getFieldValue(Object obj, String fieldName) {
-            // Разделяем на части по точке
-            String[] parts = fieldName.split("\\.");
-            Object current = obj;
+        // Разделяем на части по точке
+        String[] parts = fieldName.split("\\.");
+        Object current = obj;
 
-            for (String part : parts) {
-                if (current == null) return null;
+        for (String part : parts) {
+            if (current == null) return null;
 
-                // Если часть содержит индекс [n]
-                if (part.contains("[")) {
-                    current = getIndexedValue(current, part);
-                } else {
-                    current = getDirectFieldValue(current, part);
-                }
+            // Если часть содержит индекс [n]
+            if (part.contains("[")) {
+                current = getIndexedValue(current, part);
+            } else {
+                current = getDirectFieldValue(current, part);
             }
+        }
 
-            return current;
+        return current;
     }
 
     private static Object getIndexedValue(Object obj, String fieldWithIndex) {

@@ -1,3 +1,4 @@
+
 package api.models.comparison;
 
 import java.lang.reflect.Field;

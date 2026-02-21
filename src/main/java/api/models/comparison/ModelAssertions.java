@@ -39,4 +39,3 @@ public class ModelAssertions extends AbstractAssert<ModelAssertions, Object> {
         return this;
     }
 }
-

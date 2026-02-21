@@ -1,3 +1,4 @@
+
 package api.database.dao.comparison;
 
 import api.models.BaseModel;

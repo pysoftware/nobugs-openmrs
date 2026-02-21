@@ -86,4 +86,25 @@ public class PatientSteps {
                 ResponseSpec.requestReturnsOk()
         ).getAll(PatientResponse.class, params);
     }
+
+    public static VisitResponse createVisit(Visit request) {
+        return new ValidatedCrudRequester<VisitResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.CREATEVISIT,
+                ResponseSpec.entityWasCreated()
+        ).post(request);
+    }
+
+    public static ValidatableResponse getAllVisitTypesRaw() {
+        return new CrudRequester(
+                RequestSpec.adminSpec(),
+                Endpoint.VISITTYPE,
+                ResponseSpec.requestReturnsOk()
+        ) {
+        }.get();
+    }
+
+    public static VisitTypeResponse getVisitTyoe() {
+        return PatientSteps.getAllVisitTypesRaw().extract().jsonPath().getObject("results[0]", VisitTypeResponse.class);
+    }
 }
