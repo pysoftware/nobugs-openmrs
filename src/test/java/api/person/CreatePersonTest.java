@@ -4,11 +4,7 @@ import api.BaseTest;
 import api.generators.RandomModelGenerator;
 import api.models.*;
 import api.models.comparison.ModelAssertions;
-import api.requests.skelethon.Endpoint;
-import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.steps.ErrorMessages;
-import api.specs.RequestSpec;
-import api.specs.ResponseSpec;
 import common.annotations.PrepareData;
 import common.extensions.Prepare;
 import common.storage.SessionStorage;
@@ -95,11 +91,7 @@ public class CreatePersonTest extends BaseTest {
         PersonCreateRequest personRequest = RandomModelGenerator.generate(PersonCreateRequest.class);
         personRequest.setNames(null);
 
-        new CrudRequester(
-                RequestSpec.adminSpec(),
-                Endpoint.PERSON,
-                ResponseSpec.requestReturnsBadRequest(errorPersonNamesIsNull))
-                .post(personRequest);
+        createPersonError(personRequest, ErrorMessages.PERSON_NAME_IS_NULL.toString());
 
         int countPersonActual = getAllPersons().size();
 
@@ -114,13 +106,7 @@ public class CreatePersonTest extends BaseTest {
         PersonCreateRequest personRequest = RandomModelGenerator.generate(PersonCreateRequest.class);
         personRequest.setAddresses(null);
 
-
-        new CrudRequester(
-                RequestSpec.adminSpec(),
-                Endpoint.PERSON,
-                ResponseSpec.requestReturnsBadRequest(errorPersonAddressIsNull))
-                ResponseSpec.requestReturnsBadRequest(ErrorMessages.PERSON_NAME_IS_NULL.toString()))
-                .post(personRequest);
+        createPersonError(personRequest, ErrorMessages.PERSON_ADDRESS_IS_NULL.toString());
 
         int countPersonActual = getAllPersons().size();
 

@@ -1,10 +1,7 @@
 package api.requests.steps;
 
 import api.generators.RandomModelGenerator;
-import api.models.PersonAddressCreateRequest;
-import api.models.PersonAddressResponse;
-import api.models.PersonCreateRequest;
-import api.models.PersonResponse;
+import api.models.*;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
@@ -31,6 +28,22 @@ public class PersonSteps {
     public static PersonResponse createPerson() {
         PersonCreateRequest request = RandomModelGenerator.generate(PersonCreateRequest.class);
         return createPerson(request);
+    }
+
+    public static void createPersonError(PersonCreateRequest request, String errorMessage) {
+        new CrudRequester(
+                RequestSpec.adminSpec(),
+                Endpoint.PERSON,
+                ResponseSpec.requestReturnsBadRequest(errorMessage))
+                .post(request);
+    }
+
+    public static PersonResponse updatePerson(PersonUpdateRequest personUpdate, String uuid) {
+        return new ValidatedCrudRequester<PersonResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.PERSON,
+                ResponseSpec.requestReturnsOk())
+                .update(personUpdate, uuid);
     }
 
     public static PersonResponse getPerson(String uuid) {
@@ -77,6 +90,14 @@ public class PersonSteps {
                 Endpoint.PERSON_ADDRES ,
                 ResponseSpec.requestReturnsOk()
         ).getAll(PersonAddressResponse.class, params);
+    }
+
+    public static void deletePerson(boolean purge, String personUuid) {
+        new CrudRequester(
+                RequestSpec.adminSpec(),
+                Endpoint.PERSON,
+                ResponseSpec.requestReturnsNoContent())
+        .delete(purge, personUuid);
     }
 
 }

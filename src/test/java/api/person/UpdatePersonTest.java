@@ -15,6 +15,7 @@ import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 
 import static api.requests.steps.PersonSteps.getPerson;
+import static api.requests.steps.PersonSteps.updatePerson;
 
 public class UpdatePersonTest extends BaseTest {
     @PrepareData(Prepare.PERSON)
@@ -27,11 +28,7 @@ public class UpdatePersonTest extends BaseTest {
 
         PersonUpdateRequest personUpdate = RandomModelGenerator.generate(PersonUpdateRequest.class);
 
-        PersonResponse personResponseUpdate = new ValidatedCrudRequester<PersonResponse>(
-                RequestSpec.adminSpec(),
-                Endpoint.PERSON,
-                ResponseSpec.requestReturnsOk())
-                .update(personUpdate, personUuid);
+        PersonResponse personResponseUpdate = updatePerson(personUpdate, personUuid);
 
         softly.assertThat(getPerson(personUuid).getPreferredAddress().getDisplay()).isNotEqualTo(personDisplayName);
         softly.assertThat(getPerson(personUuid).getPreferredName().getDisplay()).isNotEqualTo(personDisplayAddress);

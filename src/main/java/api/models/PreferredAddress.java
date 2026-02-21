@@ -1,5 +1,6 @@
 package api.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PreferredAddress extends BaseModel {
     private String uuid;
     private String display;
@@ -22,4 +24,5 @@ public class PreferredAddress extends BaseModel {
     private String country;
     private String postalCode;
     private Boolean preferred;
+    private Boolean voided;
 }
