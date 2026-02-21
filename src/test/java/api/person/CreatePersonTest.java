@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static api.requests.steps.PersonSteps.*;
-import static api.specs.ResponseSpec.errorPersonNamesIsNull;
 import static api.utils.StringUtils.parseDisplay;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -120,6 +119,7 @@ public class CreatePersonTest extends BaseTest {
                 RequestSpec.adminSpec(),
                 Endpoint.PERSON,
                 ResponseSpec.requestReturnsBadRequest(errorPersonAddressIsNull))
+                ResponseSpec.requestReturnsBadRequest(ErrorMessages.PERSON_NAME_IS_NULL.toString()))
                 .post(personRequest);
 
         int countPersonActual = getAllPersons().size();
