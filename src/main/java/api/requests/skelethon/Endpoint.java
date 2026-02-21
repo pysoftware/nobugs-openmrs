@@ -55,6 +55,11 @@ public enum Endpoint {
             BaseModel.class,
             VisitTypeResults.class
     ),
+    CREATEVISITTYPE(
+            "visittype",
+            VisitCreateRequest.class,
+            VisitTypeResponse.class
+    ),
 
     CREATEVISIT(
             "/visit",

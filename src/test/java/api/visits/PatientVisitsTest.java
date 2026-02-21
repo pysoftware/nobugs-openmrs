@@ -50,8 +50,32 @@ public class PatientVisitsTest extends BaseTest {
 
         VisitResponse createdVisit = PatientSteps.createVisit(visitRequest);
 
-        System.out.println(createdVisit.toString());
-
         ModelAssertions.assertThatModels(createdVisit, visitRequest).match();
+    }
+
+    @Test
+    public void userAbleToToCreateVisitTypeTest() {
+
+        VisitTypeCreateRequest newVisitType = RandomModelGenerator.generate(VisitTypeCreateRequest.class);
+
+        VisitTypeResponse createdVisitType = PatientSteps.createVisitType(newVisitType);
+
+        ModelAssertions.assertThatModels(newVisitType, createdVisitType).match();
+    }
+
+    @PrepareData(Prepare.PATIENT_IDENTIFIER_TYPE)
+    @PrepareData(Prepare.LOCATION)
+    @Test
+    public void useAbleToUpdateVisitTypeTest() {
+
+        VisitTypeResponse visitType = PatientSteps.getVisitType();
+
+        visitType.getUuid();
+
+        VisitTypeCreateRequest newVisitType = RandomModelGenerator.generate(VisitTypeCreateRequest.class);
+
+
+
+
     }
 }

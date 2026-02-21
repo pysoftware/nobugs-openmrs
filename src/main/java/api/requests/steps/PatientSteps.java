@@ -115,4 +115,12 @@ public class PatientSteps {
                 ResponseSpec.entityWasCreated()
         ).post(request);
     }
+
+    public static VisitTypeResponse createVisitType(VisitTypeCreateRequest request) {
+        return new ValidatedCrudRequester<VisitTypeResponse> (
+                RequestSpec.adminSpec(),
+                Endpoint.CREATEVISITTYPE,
+                ResponseSpec.entityWasCreated()
+                ).post(request);
+    }
 }
