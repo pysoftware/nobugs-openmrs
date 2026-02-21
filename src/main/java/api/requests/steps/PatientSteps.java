@@ -50,7 +50,7 @@ public class PatientSteps {
         new CrudRequester(
                 RequestSpec.adminSpec(),
                 Endpoint.PATIENT,
-                ResponseSpec.requestReturnsBadRequest(ErrorMessages.IDENTIFIER_TYPE_IS_NULL)
+                ResponseSpec.requestReturnsBadRequest(ErrorMessages.IDENTIFIER_TYPE_IS_NULL.toString())
         ).post(request);
     }
 
@@ -66,7 +66,7 @@ public class PatientSteps {
         new CrudRequester(
                 RequestSpec.adminSpec(),
                 Endpoint.PATIENT,
-                ResponseSpec.requestReturnsNotFound(ErrorMessages.OBJECT_DOES_NOT_EXIST)
+                ResponseSpec.requestReturnsNotFound(ErrorMessages.OBJECT_DOES_NOT_EXIST.toString())
         ).delete(purge, uuid);
     }
 
