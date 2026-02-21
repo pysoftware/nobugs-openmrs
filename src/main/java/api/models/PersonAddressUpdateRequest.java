@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Data
 @NoArgsConstructor
@@ -15,7 +15,8 @@ public class PersonAddressUpdateRequest extends BaseModel {
     private String address1;
     private String cityVillage;
     private String stateProvince;
-    private int postalCode;
-    private LocalDate latitude;
-    private LocalDate longitude;
+    private String postalCode;
+    private OffsetDateTime latitude;
+    private OffsetDateTime longitude;
+    private Boolean preferred;
 }

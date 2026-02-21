@@ -27,6 +27,12 @@ public enum Endpoint {
             PersonAddressResponse.class
     ),
 
+    PERSON_NAME(
+            "/person/{uuid}/name",
+            PersonNameCreateRequest.class,
+            PersonNameResponse.class
+    ),
+
     PATIENT(
             "/patient",
             PatientCreateRequest.class,

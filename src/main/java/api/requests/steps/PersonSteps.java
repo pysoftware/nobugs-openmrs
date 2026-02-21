@@ -83,6 +83,16 @@ public class PersonSteps {
         return response;
     }
 
+    public static PersonNameResponse updateNamePerson(PersonNameUpdateRequest request, String uuid) {
+        PersonNameResponse response = new ValidatedCrudRequester<PersonNameResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.PERSON_NAME,
+                ResponseSpec.entityWasCreated()
+        ).post(request, uuid);
+
+        return response;
+    }
+
     public static List<PersonAddressResponse> getAllPersonAddress(){
         var params = Map.<String, Object>of("q", " ");
         return new ValidatedCrudRequester<PersonAddressResponse>(

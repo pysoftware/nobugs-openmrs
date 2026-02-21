@@ -89,6 +89,7 @@ public class CreatePersonTest extends BaseTest {
                 });
         PersonResponse personResponse2 = createPerson(request);
         String personUuid = personResponse2.getUuid();
+
         assertThat(getPerson(personResponse2.getUuid())).isNotNull();
         ModelAssertions.assertThatModels(request, personResponse2).match();
 
