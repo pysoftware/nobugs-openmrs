@@ -9,6 +9,7 @@ import common.annotations.PrepareData;
 import common.extensions.Prepare;
 import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.time.OffsetDateTime;
 
@@ -63,19 +64,15 @@ public class PatientVisitsTest extends BaseTest {
         ModelAssertions.assertThatModels(newVisitType, createdVisitType).match();
     }
 
-    @PrepareData(Prepare.PATIENT_IDENTIFIER_TYPE)
-    @PrepareData(Prepare.LOCATION)
     @Test
     public void useAbleToUpdateVisitTypeTest() {
 
         VisitTypeResponse visitType = PatientSteps.getVisitType();
 
-        visitType.getUuid();
-
         VisitTypeCreateRequest newVisitType = RandomModelGenerator.generate(VisitTypeCreateRequest.class);
 
+        VisitTypeResponse updatedVisitType = PatientSteps.updateVisitType(newVisitType, visitType.getUuid());
 
-
-
+        ModelAssertions.assertThatModels(newVisitType, updatedVisitType).match();
     }
 }

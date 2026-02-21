@@ -61,6 +61,12 @@ public enum Endpoint {
             VisitTypeResponse.class
     ),
 
+    UPDATEVISITTYPE(
+            "/visittype",
+            VisitTypeCreateRequest.class,
+            VisitTypeResponse.class
+    ),
+
     CREATEVISIT(
             "/visit",
             Visit.class,

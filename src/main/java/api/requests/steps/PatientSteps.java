@@ -123,4 +123,12 @@ public class PatientSteps {
                 ResponseSpec.entityWasCreated()
                 ).post(request);
     }
+
+    public static VisitTypeResponse updateVisitType(VisitTypeCreateRequest request, String uuid) {
+        return new ValidatedCrudRequester<VisitTypeResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.UPDATEVISITTYPE,
+                ResponseSpec.requestReturnsOk()
+        ).post(request, uuid);
+    }
 }
