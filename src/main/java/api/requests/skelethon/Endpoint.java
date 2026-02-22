@@ -50,19 +50,14 @@ public enum Endpoint {
             LocationCreateRequest.class,
             LocationResponse.class
     ),
-    GETVISITTYPE(
-            "/visittype",
-            VisitCreateRequest.class,
-            VisitTypeResults.class
-    ),
+
     VISITTYPE(
             "/visittype",
             VisitCreateRequest.class,
             VisitTypeResponse.class
     ),
 
-
-    CREATEVISIT(
+    VISIT(
             "/visit",
             Visit.class,
             VisitResponse.class

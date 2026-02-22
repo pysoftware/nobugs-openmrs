@@ -4,41 +4,24 @@ import api.BaseTest;
 import api.generators.RandomModelGenerator;
 import api.models.*;
 import api.models.comparison.ModelAssertions;
-import api.requests.steps.PatientSteps;
+import api.requests.steps.VisitSteps;
 import common.annotations.PrepareData;
 import common.extensions.Prepare;
 import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.provider.EnumSource;
 
 import java.time.OffsetDateTime;
 
 public class PatientVisitsTest extends BaseTest {
 
-    @PrepareData(Prepare.PATIENT_IDENTIFIER_TYPE)
+    @PrepareData(Prepare.PATIENT)
     @PrepareData(Prepare.LOCATION)
     @Test
     public void userAbleToAddVisits() {
-
-        PatientIdentifierTypeResponse patientIdentifierType = SessionStorage.get(Prepare.PATIENT_IDENTIFIER_TYPE, 1);
+        PatientResponse patient = SessionStorage.get(Prepare.PATIENT, 1);
         LocationResponse location = SessionStorage.get(Prepare.LOCATION, 1);
 
-        PatientCreateNewRequest patientRequest =
-                RandomModelGenerator.generate(PatientCreateNewRequest.class,
-                        fields -> {
-                            for (IdentifierRequest identifier : fields.getIdentifiers()) {
-                                identifier.setIdentifierType(patientIdentifierType.getUuid());
-                                identifier.setLocation(location.getUuid());
-                                identifier.setPreferred(false);
-                            }
-                            Person person = fields.getPerson();
-                            person.setDead(false);
-                            person.setCauseOfDeath(null);
-                            person.setDeathDate(null);
-                        });
-        PatientResponse patient = PatientSteps.createPatient(patientRequest);
-
-        VisitTypeResponse getFirstVisitType =  PatientSteps.getVisitType();
+        VisitTypeResponse getFirstVisitType =  VisitSteps.getVisitType();
 
         OffsetDateTime now = OffsetDateTime.now();
         Visit visitRequest = Visit.builder()
@@ -49,7 +32,7 @@ public class PatientVisitsTest extends BaseTest {
                 .stopDatetime(now.plusMinutes(15))
                 .build();
 
-        VisitResponse createdVisit = PatientSteps.createVisit(visitRequest);
+        VisitResponse createdVisit = VisitSteps.createVisit(visitRequest);
 
         ModelAssertions.assertThatModels(createdVisit, visitRequest).match();
     }
@@ -59,7 +42,7 @@ public class PatientVisitsTest extends BaseTest {
 
         VisitTypeCreateRequest newVisitType = RandomModelGenerator.generate(VisitTypeCreateRequest.class);
 
-        VisitTypeResponse createdVisitType = PatientSteps.createVisitType(newVisitType);
+        VisitTypeResponse createdVisitType = VisitSteps.createVisitType(newVisitType);
 
         ModelAssertions.assertThatModels(newVisitType, createdVisitType).match();
     }
@@ -67,11 +50,11 @@ public class PatientVisitsTest extends BaseTest {
     @Test
     public void useAbleToUpdateVisitTypeTest() {
 
-        VisitTypeResponse visitType = PatientSteps.getVisitType();
+        VisitTypeResponse visitType = VisitSteps.getVisitType();
 
         VisitTypeCreateRequest newVisitType = RandomModelGenerator.generate(VisitTypeCreateRequest.class);
 
-        VisitTypeResponse updatedVisitType = PatientSteps.updateVisitType(newVisitType, visitType.getUuid());
+        VisitTypeResponse updatedVisitType = VisitSteps.updateVisitType(newVisitType, visitType.getUuid());
 
         ModelAssertions.assertThatModels(newVisitType, updatedVisitType).match();
     }
