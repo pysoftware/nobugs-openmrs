@@ -55,6 +55,18 @@ public enum Endpoint {
             "/location",
             LocationCreateRequest.class,
             LocationResponse.class
+    ),
+
+    VISITTYPE(
+            "/visittype",
+            VisitCreateRequest.class,
+            VisitTypeResponse.class
+    ),
+
+    VISIT(
+            "/visit",
+            Visit.class,
+            VisitResponse.class
     );
 
     private final String url;
