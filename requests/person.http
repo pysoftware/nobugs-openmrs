@@ -42,6 +42,12 @@ Authorization: Basic YWRtaW46QWRtaW4xMjM=
 Accept: application/json
 
 
+### 3.  Поиск всех Person  -> 200
+GET http://localhost/openmrs/ws/rest/v1/person?q=
+Content-Type: application/json
+Authorization: Basic YWRtaW46QWRtaW4xMjM=
+Accept: application/json
+
 ### 3.  Поиск Person по имени если такого нет -> 200 //{"results":[]}
 
 GET http://localhost/openmrs/ws/rest/v1/person?q=kot

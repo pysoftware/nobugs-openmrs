@@ -1,0 +1,79 @@
+package api.requests.skelethon.requesters;
+
+import api.models.BaseModel;
+import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.HttpRequest;
+import api.requests.skelethon.interfaces.CrudEndpointInterface;
+import api.requests.skelethon.interfaces.GetAllEndpointInterface;
+import io.restassured.response.ValidatableResponse;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest implements CrudEndpointInterface, GetAllEndpointInterface {
+    CrudRequester crudRequester;
+
+    public ValidatedCrudRequester(RequestSpecification requestSpecification, Endpoint endpoint, ResponseSpecification responseSpecification) {
+        super(requestSpecification, endpoint, responseSpecification);
+        this.crudRequester = new CrudRequester(requestSpecification, endpoint, responseSpecification);
+    }
+
+    @Override
+    public T post(BaseModel model) {
+        return (T) crudRequester.post(model).extract().as(endpoint.getResponseModel());
+    }
+
+    @Override
+    public T post(BaseModel model, String... uuids) {
+        return (T) crudRequester.post(model, uuids).extract().as(endpoint.getResponseModel());
+    }
+
+    @Override
+    public T get(String... uuid) {
+        return (T) crudRequester.get(uuid).extract().as(endpoint.getResponseModel());
+    }
+
+    @Override
+    public T get() {
+        return (T) crudRequester.get().extract().as(endpoint.getResponseModel());
+    }
+
+    @Override
+    public T update(BaseModel model, String uuid) {
+        return (T) crudRequester.update(model, uuid).extract().as(endpoint.getResponseModel());
+    }
+
+    @Override
+    public Object delete(String... uuid) {
+        return null;
+    }
+
+    @Override
+    public Object delete(boolean purge, String... uuid) {
+        return null;
+    }
+
+    @Override
+    public List<T> getAll(Class<?> clazz) {
+        return getAll(clazz, (Map<String, ?>) null);
+    }
+
+    private List<T> extractList(Class<?> clazz, ValidatableResponse response) {
+        @SuppressWarnings("unchecked")
+        List<T> list = response.extract().jsonPath().getList("results", (Class<T>) clazz);
+        return list != null ? list : Collections.emptyList();
+    }
+
+    public List<T> getAll(Class<?>  clazz, Map<String, ?> queryParams) {
+        ValidatableResponse response = crudRequester.getAll(clazz, queryParams);
+        return extractList(clazz, response);
+    }
+
+    public List<T> getAll(Class<?>  clazz, String... uuids) {
+        ValidatableResponse response = crudRequester.getAll(clazz, uuids);
+        return extractList(clazz, response);
+    }
+}
