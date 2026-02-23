@@ -1,5 +1,6 @@
 package api.models;
 
+import api.generators.annotations.GeneratingOffsetDateTimeRule;
 import api.models.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +17,7 @@ import java.util.List;
 public class PersonCreateRequest extends BaseModel {
     private List<PersonName> names;
     private Gender gender;
-    //@DateFormat
+    @GeneratingOffsetDateTimeRule(time = false)
     private OffsetDateTime birthdate;
     private List<PersonAddress> addresses;
 }

@@ -1,6 +1,7 @@
 package api.person;
 
 import api.BaseTest;
+import api.database.dao.PersonAddressDao;
 import api.database.dao.PersonDao;
 import api.database.dao.comparison.DaoAndModelAssertions;
 import api.generators.RandomModelGenerator;
@@ -50,8 +51,8 @@ public class CreatePersonTest extends BaseTest {
 
         ModelAssertions.assertThatModels(personAddressCreateRequest, personAddressResponse).match();
 
-        PersonDao personDao = DataBaseSteps.getPersonByUuid(personUuid);
-        DaoAndModelAssertions.assertThat(personAddressResponse, personDao).match();
+        PersonAddressDao personAddressDao = DataBaseSteps.getPersonAddressByUuid(personAddressResponse.getUuid());
+        DaoAndModelAssertions.assertThat(personAddressResponse, personAddressDao).match();
     }
 
     @Test

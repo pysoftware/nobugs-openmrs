@@ -77,10 +77,16 @@ public class DataBaseSteps {
         return DBRequest.builder()
                 .requestType(DBRequest.RequestType.SELECT)
                 .table(Table.PERSON.getName())
-                .innerJoin(InnerJoin.condition(Table.PERSON.getName(),"person_id", Table.PERSON_NAME.getName(), "person_id"))
-                .innerJoin(InnerJoin.condition(Table.PERSON.getName(),"person_id", Table.PERSON_ADDRESS.getName(), "person_id"))
                 .where(Condition.equalTo(Table.PERSON.getName(), "uuid", uuid))
                 .extractAs(PersonDao.class);
+    }
+
+    public static PersonAddressDao getPersonAddressByUuid(String uuid) {
+        return DBRequest.builder()
+                .requestType(DBRequest.RequestType.SELECT)
+                .table(Table.PERSON_ADDRESS.getName())
+                .where(Condition.equalTo(Table.PERSON_ADDRESS.getName(), "uuid", uuid))
+                .extractAs(PersonAddressDao.class);
     }
 
 }
