@@ -1,6 +1,5 @@
 package api;
 
-
 import api.models.LoginResponse;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;

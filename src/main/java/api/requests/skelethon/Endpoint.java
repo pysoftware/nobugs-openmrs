@@ -21,7 +21,7 @@ public enum Endpoint {
             PersonResponse.class
     ),
 
-    PERSON_ADDRES(
+    PERSON_ADDRESS(
             "/person/{uuid}/address",
             PersonAddressCreateRequest.class,
             PersonAddressResponse.class
@@ -57,7 +57,7 @@ public enum Endpoint {
             LocationResponse.class
     ),
 
-    VISITTYPE(
+    VISIT_TYPE(
             "/visittype",
             VisitCreateRequest.class,
             VisitTypeResponse.class

@@ -21,7 +21,7 @@ public class VisitSteps {
 
         return new CrudRequester(
                 RequestSpec.adminSpec(),
-                Endpoint.VISITTYPE,
+                Endpoint.VISIT_TYPE,
                 ResponseSpec.requestReturnsOk()
         ).getAll(VisitTypeResults.class, params);
     }
@@ -44,7 +44,7 @@ public class VisitSteps {
     public static VisitTypeResponse createVisitType(VisitTypeCreateRequest request) {
         return new ValidatedCrudRequester<VisitTypeResponse> (
                 RequestSpec.adminSpec(),
-                Endpoint.VISITTYPE,
+                Endpoint.VISIT_TYPE,
                 ResponseSpec.entityWasCreated()
         ).post(request);
     }
@@ -52,7 +52,7 @@ public class VisitSteps {
     public static VisitTypeResponse updateVisitType(VisitTypeCreateRequest request, String uuid) {
         return new ValidatedCrudRequester<VisitTypeResponse>(
                 RequestSpec.adminSpec(),
-                Endpoint.VISITTYPE,
+                Endpoint.VISIT_TYPE,
                 ResponseSpec.requestReturnsOk()
         ).post(request, uuid);
     }

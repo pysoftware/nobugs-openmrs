@@ -76,7 +76,7 @@ public class PersonSteps {
     public static PersonAddressResponse createAddressPerson(PersonAddressCreateRequest request, String uuid) {
         PersonAddressResponse response = new ValidatedCrudRequester<PersonAddressResponse>(
                 RequestSpec.adminSpec(),
-                Endpoint.PERSON_ADDRES,
+                Endpoint.PERSON_ADDRESS,
                 ResponseSpec.entityWasCreated()
         ).post(request, uuid);
 
@@ -97,7 +97,7 @@ public class PersonSteps {
         var params = Map.<String, Object>of("q", " ");
         return new ValidatedCrudRequester<PersonAddressResponse>(
                 RequestSpec.adminSpec(),
-                Endpoint.PERSON_ADDRES ,
+                Endpoint.PERSON_ADDRESS,
                 ResponseSpec.requestReturnsOk()
         ).getAll(PersonAddressResponse.class, params);
     }
