@@ -13,7 +13,7 @@ import java.util.List;
 public class BaseUiTest extends BaseTest {
     protected static Playwright playwright;
     protected static Browser browser;
-    protected Page page;           // каждый тест получит свою страницу
+    protected Page page;
 
     @BeforeAll
     static void setupPlaywright() {
@@ -53,7 +53,6 @@ public class BaseUiTest extends BaseTest {
 
         Browser.NewContextOptions contextOptions = new Browser.NewContextOptions();
 
-        // размер окна
         try {
             String[] dims = PlaywrightConfiguration.browserSize.split("x");
             int w = Integer.parseInt(dims[0].trim());
