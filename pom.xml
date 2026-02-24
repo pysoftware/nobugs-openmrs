@@ -57,7 +57,7 @@
             <artifactId>junit-jupiter</artifactId>
             <version>5.10.2</version> <!-- Самая стабильная на апрель 2025 -->
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>5.10.2</version>
@@ -76,7 +76,7 @@
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-commons</artifactId>
             <version>1.10.2</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -147,6 +147,11 @@
             <artifactId>javafaker</artifactId>
             <version>1.0.2</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>1.57.0</version>
         </dependency>
     </dependencies>
 </project>
