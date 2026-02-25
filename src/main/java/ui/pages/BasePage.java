@@ -10,6 +10,12 @@ public abstract class BasePage {
         this.page = page;
     }
 
+    public void open() {
+        navigate(getRelativePath());
+    }
+
+    protected abstract String getRelativePath();
+
     protected void waitForVisible(String selector, int timeoutMs) {
         page.waitForSelector(selector, new Page.WaitForSelectorOptions().setTimeout(timeoutMs));
     }
