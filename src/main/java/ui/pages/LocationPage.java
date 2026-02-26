@@ -9,25 +9,13 @@ public class LocationPage extends BasePage {
     }
 
     @Override
-    protected String getRelativePath() {
-        return "openmrs/spa/login/location";
+    protected String path() {
+        return "login/location";
     }
 
-    /**
-     * Выбирает первую доступную локацию и нажимает Continue
-     * Возвращает следующую страницу (например HomePage)
-     */
-    public void selectFirstLocationAndContinue() {
-        // Ждём появления списка локаций
-        page.waitForSelector("[role=\"option\"]",
-                new Page.WaitForSelectorOptions().setTimeout(15000));
-
-        // Выбираем первую локацию
-        page.getByRole(AriaRole.valueOf("option")).first().click();
-
-        // Нажимаем Continue
-        page.getByRole(AriaRole.valueOf("button"), new Page.GetByRoleOptions().setName("Continue")).click();
-
-
+    public void selectFirstLocationAndConfirm() {
+        this.open();
+        page.locator("label.cds--radio-button__label").first().click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Confirm")).click();
     }
 }

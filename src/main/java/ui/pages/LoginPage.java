@@ -19,8 +19,8 @@ public class LoginPage extends BasePage {
     }
 
     @Override
-    public String getRelativePath() {
-        return "/openmrs/spa/login";
+    public String path() {
+        return "login";
     }
 
     public LocationPage loginAsAdmin() {

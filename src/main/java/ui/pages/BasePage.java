@@ -3,7 +3,6 @@ package ui.pages;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.LoadState;
 
-
 public abstract class BasePage {
 
     protected final Page page;
@@ -13,10 +12,10 @@ public abstract class BasePage {
     }
 
     public void open() {
-        navigate(getRelativePath());
+        page.navigate(path());
     }
 
-    protected abstract String getRelativePath();
+    protected abstract String path();
 
     protected void waitForVisible(String selector, int timeoutMs) {
         page.waitForSelector(selector, new Page.WaitForSelectorOptions().setTimeout(timeoutMs));
@@ -44,6 +43,4 @@ public abstract class BasePage {
         // ждём стабильной загрузки DOM
         page.waitForLoadState(LoadState.DOMCONTENTLOADED);
     }
-
-
 }

@@ -12,12 +12,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import ui.configs.PlaywrightConfiguration;
+import ui.pages.LocationPage;
 
 import java.util.List;
 
 @ExtendWith(AdminSessionExtension.class)
 public class BaseUiTest extends BaseTest {
     protected static Playwright playwright;
+    protected static String url;
     protected static Browser browser;
     protected Page page;
 
@@ -26,6 +28,7 @@ public class BaseUiTest extends BaseTest {
         // Один раз загружаем настройки
         PlaywrightConfiguration.loadFromProperties();
 
+        url = PlaywrightConfiguration.baseUrl + PlaywrightConfiguration.basePath;
         playwright = Playwright.create();
 
         BrowserType browserType = switch (PlaywrightConfiguration.browser.toLowerCase()) {
@@ -55,8 +58,6 @@ public class BaseUiTest extends BaseTest {
 
     @BeforeEach
     void createPageAndContext() {
-
-
     }
 
     @AfterEach
@@ -86,10 +87,7 @@ public class BaseUiTest extends BaseTest {
      * Использует готовую спецификацию adminSpec(), которая уже кэширует JSESSIONID.
      */
     public void authAsAdmin() {
-        String HOME_URL = "/openmrs/spa/home";
-        String baseUrl = PlaywrightConfiguration.baseUrl;
-
-        // 1. Получаем спецификацию для admin (она сама залогинится, если сессия не активна)
+        // Получаем спецификацию для admin (она сама залогинится, если сессия не активна)
         var adminSpec = RequestSpec.adminSpec();
 
         String jsessionId = RequestSpec.getJsessionId(Config.getProperty("admin.username"), Config.getProperty("admin.password"));  // реализация ниже
@@ -98,8 +96,8 @@ public class BaseUiTest extends BaseTest {
             throw new IllegalStateException("Не удалось получить JSESSIONID для admin");
         }
 
-        // 1. Создаём новый контекст браузера
-        Browser.NewContextOptions contextOptions = new Browser.NewContextOptions();
+        // Создаём новый контекст браузера
+        Browser.NewContextOptions contextOptions = new Browser.NewContextOptions().setBaseURL(url);
 
         try {
             String[] dims = PlaywrightConfiguration.browserSize.split("x");
@@ -110,13 +108,9 @@ public class BaseUiTest extends BaseTest {
             // можно залогировать
         }
 
-        if (baseUrl != null && !baseUrl.isBlank()) {
-            contextOptions.setBaseURL(baseUrl);
-        }
-
         BrowserContext context = browser.newContext(contextOptions);
 
-        // 2. Кладём JSESSIONID в контекст
+        // Кладём JSESSIONID в контекст
         context.addCookies(List.of(
                 new Cookie("JSESSIONID", jsessionId)
                         .setDomain("localhost")
@@ -125,13 +119,10 @@ public class BaseUiTest extends BaseTest {
                         .setSecure(false)
         ));
 
-        // 3. Создаём page после контекста
+        // Создаём page после контекста
         page = context.newPage();
 
-        // 4. Переходим на главную страницу SPA — браузер подхватит сессию
-        page.navigate(HOME_URL);
-
-        // 5. Ждём признака успешной авторизации (можно любой элемент после логина)
-        page.waitForSelector("text=Welcome admin", new Page.WaitForSelectorOptions().setTimeout(15000));
+        // Выбираем локацию чтобы можно было приступить к работе
+        new LocationPage(page).selectFirstLocationAndConfirm();
     }
 }
