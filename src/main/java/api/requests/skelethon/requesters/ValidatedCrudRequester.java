@@ -72,7 +72,7 @@ public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest imp
         return extractList(clazz, response);
     }
 
-    public List<T> getAll(Class<?>  clazz, String... uuids) {
+    public List<T>  getAll(Class<?>  clazz, String... uuids) {
         ValidatableResponse response = crudRequester.getAll(clazz, uuids);
         return extractList(clazz, response);
     }

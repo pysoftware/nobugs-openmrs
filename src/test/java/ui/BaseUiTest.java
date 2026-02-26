@@ -5,14 +5,17 @@ import api.configs.Config;
 import api.specs.RequestSpec;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.Cookie;
+import extensions.AdminSessionExtension;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import ui.configs.PlaywrightConfiguration;
 
 import java.util.List;
 
+@ExtendWith(AdminSessionExtension.class)
 public class BaseUiTest extends BaseTest {
     protected static Playwright playwright;
     protected static Browser browser;
@@ -31,7 +34,7 @@ public class BaseUiTest extends BaseTest {
             default -> playwright.chromium();
         };
 
-        var options = new BrowserType.LaunchOptions()
+        BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
                 .setHeadless(PlaywrightConfiguration.headless);
 
         if (browserType == playwright.chromium()) {
@@ -52,25 +55,7 @@ public class BaseUiTest extends BaseTest {
 
     @BeforeEach
     void createPageAndContext() {
-        String baseUrl = PlaywrightConfiguration.baseUrl;
 
-        Browser.NewContextOptions contextOptions = new Browser.NewContextOptions();
-
-        try {
-            String[] dims = PlaywrightConfiguration.browserSize.split("x");
-            int w = Integer.parseInt(dims[0].trim());
-            int h = Integer.parseInt(dims[1].trim());
-            contextOptions.setViewportSize(w, h);
-        } catch (Exception ignored) {
-            // можно залогировать
-        }
-
-        if (baseUrl != null && !baseUrl.isBlank()) {
-            contextOptions.setBaseURL(baseUrl);
-        }
-
-        BrowserContext context = browser.newContext(contextOptions);
-        page = context.newPage();
 
     }
 
@@ -102,18 +87,37 @@ public class BaseUiTest extends BaseTest {
      */
     public void authAsAdmin() {
         String HOME_URL = "/openmrs/spa/home";
+        String baseUrl = PlaywrightConfiguration.baseUrl;
+
         // 1. Получаем спецификацию для admin (она сама залогинится, если сессия не активна)
         var adminSpec = RequestSpec.adminSpec();
 
-        // 2. Извлекаем JSESSIONID
         String jsessionId = RequestSpec.getJsessionId(Config.getProperty("admin.username"), Config.getProperty("admin.password"));  // реализация ниже
 
         if (jsessionId == null || jsessionId.isBlank()) {
             throw new IllegalStateException("Не удалось получить JSESSIONID для admin");
         }
 
-        // 3. Внедряем куку в текущий контекст браузера
-        page.context().addCookies(List.of(
+        // 1. Создаём новый контекст браузера
+        Browser.NewContextOptions contextOptions = new Browser.NewContextOptions();
+
+        try {
+            String[] dims = PlaywrightConfiguration.browserSize.split("x");
+            int w = Integer.parseInt(dims[0].trim());
+            int h = Integer.parseInt(dims[1].trim());
+            contextOptions.setViewportSize(w, h);
+        } catch (Exception ignored) {
+            // можно залогировать
+        }
+
+        if (baseUrl != null && !baseUrl.isBlank()) {
+            contextOptions.setBaseURL(baseUrl);
+        }
+
+        BrowserContext context = browser.newContext(contextOptions);
+
+        // 2. Кладём JSESSIONID в контекст
+        context.addCookies(List.of(
                 new Cookie("JSESSIONID", jsessionId)
                         .setDomain("localhost")
                         .setPath("/")
@@ -121,11 +125,13 @@ public class BaseUiTest extends BaseTest {
                         .setSecure(false)
         ));
 
+        // 3. Создаём page после контекста
+        page = context.newPage();
+
         // 4. Переходим на главную страницу SPA — браузер подхватит сессию
         page.navigate(HOME_URL);
 
         // 5. Ждём признака успешной авторизации (можно любой элемент после логина)
-        page.waitForSelector("text=Logout", new Page.WaitForSelectorOptions().setTimeout(15000));
-
+        page.waitForSelector("text=Welcome admin", new Page.WaitForSelectorOptions().setTimeout(15000));
     }
 }
