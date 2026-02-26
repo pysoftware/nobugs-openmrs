@@ -3,7 +3,9 @@ package ui.pages;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.LoadState;
 
+
 public abstract class BasePage {
+
     protected final Page page;
 
     protected BasePage(Page page) {
@@ -42,4 +44,6 @@ public abstract class BasePage {
         // ждём стабильной загрузки DOM
         page.waitForLoadState(LoadState.DOMCONTENTLOADED);
     }
+
+
 }

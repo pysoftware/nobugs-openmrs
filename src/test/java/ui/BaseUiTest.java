@@ -1,7 +1,10 @@
 package ui;
 
 import api.BaseTest;
+import api.configs.Config;
+import api.specs.RequestSpec;
 import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.Cookie;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,9 +26,9 @@ public class BaseUiTest extends BaseTest {
         playwright = Playwright.create();
 
         BrowserType browserType = switch (PlaywrightConfiguration.browser.toLowerCase()) {
-            case "firefox"       -> playwright.firefox();
+            case "firefox" -> playwright.firefox();
             case "webkit", "safari" -> playwright.webkit();
-            default              -> playwright.chromium();
+            default -> playwright.chromium();
         };
 
         var options = new BrowserType.LaunchOptions()
@@ -68,6 +71,7 @@ public class BaseUiTest extends BaseTest {
 
         BrowserContext context = browser.newContext(contextOptions);
         page = context.newPage();
+
     }
 
     @AfterEach
@@ -86,9 +90,42 @@ public class BaseUiTest extends BaseTest {
 
     private static String getBrowserChannel(String name) {
         return switch (name.toLowerCase()) {
-            case "chrome"  -> "chrome";
+            case "chrome" -> "chrome";
             case "edge", "msedge" -> "msedge";
             default -> null;
         };
+    }
+
+    /**
+     * Авторизует администратора (admin) через REST API и внедряет сессию в браузер Playwright.
+     * Использует готовую спецификацию adminSpec(), которая уже кэширует JSESSIONID.
+     */
+    public void authAsAdmin() {
+        String HOME_URL = "/openmrs/spa/home";
+        // 1. Получаем спецификацию для admin (она сама залогинится, если сессия не активна)
+        var adminSpec = RequestSpec.adminSpec();
+
+        // 2. Извлекаем JSESSIONID
+        String jsessionId = RequestSpec.getJsessionId(Config.getProperty("admin.username"), Config.getProperty("admin.password"));  // реализация ниже
+
+        if (jsessionId == null || jsessionId.isBlank()) {
+            throw new IllegalStateException("Не удалось получить JSESSIONID для admin");
+        }
+
+        // 3. Внедряем куку в текущий контекст браузера
+        page.context().addCookies(List.of(
+                new Cookie("JSESSIONID", jsessionId)
+                        .setDomain("localhost")
+                        .setPath("/")
+                        .setHttpOnly(true)
+                        .setSecure(false)
+        ));
+
+        // 4. Переходим на главную страницу SPA — браузер подхватит сессию
+        page.navigate(HOME_URL);
+
+        // 5. Ждём признака успешной авторизации (можно любой элемент после логина)
+        page.waitForSelector("text=Logout", new Page.WaitForSelectorOptions().setTimeout(15000));
+
     }
 }
