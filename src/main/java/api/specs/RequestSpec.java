@@ -91,6 +91,15 @@ public class RequestSpec {
                 .cookie(new Cookie.Builder("JSESSIONID", jsessionId).build());
     }
 
+    public static String getJsessionId(String username, String password) {
+        String jsessionId = sessionCookies.get(username);
+        if (jsessionId == null) {
+            authenticatedSpec(username, password);
+            jsessionId = sessionCookies.get(username);
+        }
+        return jsessionId;
+    }
+
     /**
      * Принудительный logout и очистка кэша сессии для пользователя
      */
