@@ -19,7 +19,7 @@ public class PatientSearchPage extends BasePage {
 
     public PatientSummaryPage searchPatient() {
         ROW_PATIENT.click();
-        return new PatientSummaryPage(page);
+        return new PatientSummaryPage(page, patientUuid);
     }
 
     public boolean patientNotFound() {

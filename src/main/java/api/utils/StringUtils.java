@@ -2,7 +2,7 @@ package api.utils;
 
 public class StringUtils {
     public static String[] parseDisplay(String display) {
-        return parseDisplay(display, "\\s*=\\s*");
+        return parseDisplay(display, "\\s+");
     }
 
     public static String[] parseDisplay(String display, String splitRegex) {

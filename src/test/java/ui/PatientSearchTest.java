@@ -19,7 +19,7 @@ public class PatientSearchTest extends BaseUiTest {
     @Test
     public void adminCanSearchPatientById() {
         PatientResponse patient = SessionStorage.get(Prepare.PATIENT, 1);
-        String[] ids = parseDisplay(patient.getIdentifiers().getFirst().getDisplay());
+        String[] ids = parseDisplay(patient.getIdentifiers().getFirst().getDisplay(), "=");
         String expectedId = ids[1];
         String actualId = new PatientRegistrationPage(page)
                 .searchPatientByIdOrName(expectedId)

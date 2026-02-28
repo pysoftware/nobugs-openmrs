@@ -4,7 +4,7 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.LoadState;
 
 public abstract class BasePage {
-
+    protected String patientUuid = "";
     protected final Page page;
 
     protected BasePage(Page page) {
