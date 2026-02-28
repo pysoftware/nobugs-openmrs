@@ -1,10 +1,8 @@
 package api.utils;
 
-import groovy.lang.GString;
-
 public class StringUtils {
     public static String[] parseDisplay(String display) {
-        return parseDisplay(display, "\\s+");
+        return parseDisplay(display, "\\s*=\\s*");
     }
 
     public static String[] parseDisplay(String display, String splitRegex) {
