@@ -7,9 +7,10 @@ public class PatientSearchPage extends HomePage {
     private final Locator ROW_PATIENT = page.locator("a[href*='/patient/'][href*='/chart/']")
             .first();
     private final Locator NO_CHARTS_MESSAGE = page.getByText("Sorry, no patient charts were found");
-
-    protected PatientSearchPage(Page page) {
+    private final Locator patientBanners;
+    protected PatientSearchPage(Page page, Locator patientBanners) {
         super(page);
+        this.patientBanners = patientBanners;
     }
 
     @Override
