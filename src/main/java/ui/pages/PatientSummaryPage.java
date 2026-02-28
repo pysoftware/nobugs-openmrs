@@ -5,7 +5,7 @@ import com.microsoft.playwright.Page;
 
 import java.util.Objects;
 
-public class PatientSummaryPage extends BasePage {
+public class PatientSummaryPage extends HomePage {
 
     private final Locator TEXT_ID = page.locator("label[class*='label'][for*='identifier'] span:last-child");
     private final Locator TEXT_NAME = page.locator(".sb-avatar__text");

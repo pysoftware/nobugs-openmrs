@@ -43,4 +43,6 @@ public abstract class BasePage {
         // ждём стабильной загрузки DOM
         page.waitForLoadState(LoadState.DOMCONTENTLOADED);
     }
+
+
 }
