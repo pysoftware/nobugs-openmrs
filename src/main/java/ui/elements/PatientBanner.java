@@ -10,7 +10,7 @@ public class PatientBanner extends BaseElement {
 
     private final Locator nameLink;              // ссылка с именем пациента → ведёт в chart
     private final Locator avatar;                // аватар (img или контейнер)
-    private Locator gender;                // пол пациента (Male / Female / Other)
+    private final Locator gender;                // пол пациента (Male / Female / Other)
     private final Locator status;                // статус визита (Active Visit и т.п.)
     private final Locator age;                   // возраст ("30 yrs")
     private final Locator birth;                 // дата рождения ("24-Feb-1996")
