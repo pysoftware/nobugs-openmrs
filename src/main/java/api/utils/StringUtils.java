@@ -1,7 +1,5 @@
 package api.utils;
 
-import groovy.lang.GString;
-
 public class StringUtils {
     public static String[] parseDisplay(String display) {
         return parseDisplay(display, "\\s+");

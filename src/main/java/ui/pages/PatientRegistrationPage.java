@@ -2,7 +2,8 @@ package ui.pages;
 
 import com.microsoft.playwright.Page;
 
-public class PatientRegistrationPage extends BasePage{
+public class PatientRegistrationPage extends HomePage {
+
     public PatientRegistrationPage(Page page) {
         super(page);
     }
@@ -11,4 +12,6 @@ public class PatientRegistrationPage extends BasePage{
     protected String path() {
         return "patient-registration";
     }
+
+
 }
