@@ -4,12 +4,15 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 
 public class HomePage extends BasePage{
-    protected final Locator BUTTON_SEARCH = page.locator("[data-testid='searchPatientIcon']");
-    protected final Locator INPUT_SEARCH = page.locator("input[placeholder='Search for a patient by name or identifier number']");
-    protected final Locator BUTTON_SEARCH_ENTER = page.locator("button[type=submit] >> text=Search");
+    protected final Locator SEARCH_BUTTON;
+    protected final Locator SEARCH_INPUT;
+    protected final Locator SEARCH_ENTER_BUTTON;
 
     public HomePage(Page page) {
         super(page);
+        this.SEARCH_BUTTON = page.locator("[data-testid='searchPatientIcon']");
+        this.SEARCH_INPUT = page.locator("input[placeholder='Search for a patient by name or identifier number']");
+        this.SEARCH_ENTER_BUTTON = page.locator("button[type=submit] >> text=Search");
     }
 
     @Override
@@ -18,10 +21,10 @@ public class HomePage extends BasePage{
     }
 
     public PatientSearchPage searchPatientByIdOrName(String idOrName) {
-        BUTTON_SEARCH.click();
-        INPUT_SEARCH.fill(idOrName);
+        SEARCH_BUTTON.click();
+        SEARCH_INPUT.fill(idOrName);
         page.waitForTimeout(300);
-        BUTTON_SEARCH_ENTER.click();
+        SEARCH_ENTER_BUTTON.click();
         return new PatientSearchPage(page);
     }
 }
