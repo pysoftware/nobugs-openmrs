@@ -22,7 +22,7 @@ public class PatientSummaryPage extends HomePage {
         return String.format("patient/%s/chart/Patient%%20Summary", patientUuid);
     }
 
-    public String getOpenMrsId() {
+    public String getPatientId() {
         return TEXT_ID
                 .first()
                 .textContent()

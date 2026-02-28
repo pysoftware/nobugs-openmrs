@@ -24,7 +24,7 @@ public class PatientSearchTest extends BaseUiTest {
         String actualId = new HomePage(page)
                 .searchPatientByIdOrName(expectedId)
                 .searchPatient()
-                .getOpenMrsId();
+                .getPatientId();
 
         softly.assertThat(expectedId).isEqualTo(actualId);
         softly.assertThat(hasPatient(patient.getUuid())).isNotNull();
