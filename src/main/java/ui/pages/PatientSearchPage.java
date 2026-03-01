@@ -4,12 +4,13 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 
 public class PatientSearchPage extends HomePage {
-    private final Locator ROW_PATIENT = page.locator("a[href*='/patient/'][href*='/chart/']")
-            .first();
-    private final Locator NO_CHARTS_MESSAGE = page.getByText("Sorry, no patient charts were found");
-    private final Locator patientBanners;
-    protected PatientSearchPage(Page page, Locator patientBanners) {
+    private final Locator ROW_PATIENT;
+    private final Locator NO_CHARTS_MESSAGE;
+
+    protected PatientSearchPage(Page page) {
         super(page);
+        this.ROW_PATIENT = page.locator("a[href*='/patient/'][href*='/chart/']").first();
+        this.NO_CHARTS_MESSAGE = page.getByText("Sorry, no patient charts were found");
         this.patientBanners = patientBanners;
     }
 

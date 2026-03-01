@@ -7,15 +7,20 @@ import com.microsoft.playwright.options.AriaRole;
 
 
 public class LoginPage extends BasePage {
-    private final Locator INPUT_USERNAME = page.locator("input[id='username']");
-    private final Locator INPUT_PASSWORD = page.locator("input[id='password']");
-    private final Locator BUTTON_CONTINUE = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions()
-            .setName("Continue"));
-    private final Locator BUTTON_SUBMIT = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Log in"));
-    private final Locator WELCOME_ADMIN_TEXT = page.getByText("Welcome admin");
+    private final Locator USERNAME_INPUT;
+    private final Locator PASSWORD_INPUT;
+    private final Locator CONTINUE_BUTTON;
+    private final Locator SUBMIT_BUTTON;
+    private final Locator WELCOME_ADMIN_TEXT;
 
     public LoginPage(Page page) {
         super(page);
+        this.USERNAME_INPUT = page.locator("input[id='username']");
+        this.PASSWORD_INPUT = page.locator("input[id='password']");
+        this.CONTINUE_BUTTON = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions()
+                .setName("Continue"));
+        this.SUBMIT_BUTTON = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Log in"));
+        this.WELCOME_ADMIN_TEXT = page.getByText("Welcome admin");
     }
 
     @Override
@@ -25,13 +30,14 @@ public class LoginPage extends BasePage {
 
     public LocationPage loginAsAdmin() {
         open();
-        INPUT_USERNAME.fill(Config.getProperty("admin.username"));
-        BUTTON_CONTINUE.click();
-        INPUT_PASSWORD.fill(Config.getProperty("admin.password"));
-        BUTTON_SUBMIT.click();
+        USERNAME_INPUT.fill(Config.getProperty("admin.username"));
+        CONTINUE_BUTTON.click();
+        PASSWORD_INPUT.fill(Config.getProperty("admin.password"));
+        SUBMIT_BUTTON.click();
         WELCOME_ADMIN_TEXT.isVisible();
 
         return new LocationPage(page);
     }
 
 }
+
