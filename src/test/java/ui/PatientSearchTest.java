@@ -21,6 +21,7 @@ public class PatientSearchTest extends BaseUiTest {
         PatientResponse patient = SessionStorage.get(Prepare.PATIENT, 1);
         String[] ids = parseDisplay(patient.getIdentifiers().getFirst().getDisplay(), "=");
         String expectedId = ids[1];
+
         String actualId = new HomePage(page)
                 .searchPatientByIdOrName(expectedId)
                 .searchPatient()
@@ -54,6 +55,20 @@ public class PatientSearchTest extends BaseUiTest {
                 .patientNotFound();
 
         softly.assertThat(getPatientsByName(nonExistentName)).hasSize(0);
+    }
+
+    @AdminSession
+    @PrepareData(Prepare.PATIENT)
+    @Test
+    public void adminCanOpenPatientAction() {
+        PatientResponse patient = SessionStorage.get(Prepare.PATIENT, 1);
+        String expectedName = patient.getPerson().getPreferredName().getDisplay();
+        new HomePage(page).searchPatientByIdOrName(expectedName)
+                .openActions();
+
+/*        softly.assertThat(expectedName).isEqualTo(actualName);
+
+        softly.assertThat(getPatientsByName(actualName)).isNotNull();*/
     }
 
 }

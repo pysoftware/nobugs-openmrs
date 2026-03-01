@@ -3,7 +3,7 @@ package ui.pages;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.LoadState;
 
-public abstract class BasePage {
+public abstract class BasePage<T extends BasePage<T>> {
     protected String patientUuid = "";
     protected final Page page;
 
@@ -11,8 +11,11 @@ public abstract class BasePage {
         this.page = page;
     }
 
-    public void open() {
+    @SuppressWarnings("unchecked")
+    public T open() {
+
         page.navigate(path());
+        return (T) this;
     }
 
     protected abstract String path();

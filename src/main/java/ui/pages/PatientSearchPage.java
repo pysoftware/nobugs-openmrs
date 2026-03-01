@@ -2,16 +2,17 @@ package ui.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import ui.elements.PatientBanner;
 
 public class PatientSearchPage extends HomePage {
-    private final Locator ROW_PATIENT;
     private final Locator NO_CHARTS_MESSAGE;
+    private final PatientBanner patientBanner;
 
     protected PatientSearchPage(Page page) {
         super(page);
-        this.ROW_PATIENT = page.locator("a[href*='/patient/'][href*='/chart/']").first();
+        Locator bannerRoot = page.locator("div[role='banner']");
         this.NO_CHARTS_MESSAGE = page.getByText("Sorry, no patient charts were found");
-        this.patientBanners = patientBanners;
+        this.patientBanner = new PatientBanner(bannerRoot);
     }
 
     @Override
@@ -20,8 +21,18 @@ public class PatientSearchPage extends HomePage {
     }
 
     public PatientSummaryPage searchPatient() {
-        ROW_PATIENT.click();
+        patientBanner.clickPatientName();
         return new PatientSummaryPage(page, patientUuid);
+    }
+
+    public PatientSearchPage openActions() {
+        patientBanner.openActions();
+        return this;
+    }
+
+    public PatientSearchPage showMore() {
+        patientBanner.openActions();
+        return this;
     }
 
     public boolean patientNotFound() {
