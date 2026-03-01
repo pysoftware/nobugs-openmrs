@@ -7,13 +7,15 @@ import java.util.Objects;
 
 public class PatientSummaryPage extends HomePage {
 
-    private final Locator TEXT_ID = page.locator("label[class*='label'][for*='identifier'] span:last-child");
-    private final Locator TEXT_NAME = page.locator(".sb-avatar__text");
+    private final Locator TEXT_ID;
+    private final Locator TEXT_NAME;
 
 
     protected PatientSummaryPage(Page page, String patientUuid) {
         super(page);
         this.patientUuid = Objects.requireNonNull(patientUuid, "patientUuid is required");
+        this.TEXT_ID = page.locator("label[class*='label'][for*='identifier'] span:last-child");
+        this.TEXT_NAME = page.locator(".sb-avatar__text");
     }
 
 
