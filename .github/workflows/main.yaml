@@ -1,0 +1,58 @@
+name: OpenMRS deployment
+
+on:
+  # На любой push (коммит) в любой ветку
+  push:
+    branches:
+      - '**'  # Все ветки
+    paths-ignore:
+      - '**.md'  # Не запускать на изменения в документации
+      - '.gitignore'
+
+  # На pull request
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  # Собирается контейнер db
+  db:
+    uses: ./.github/workflows/db-stage.yml
+
+  # Собирается контейнер бекенд
+  backend:
+    needs: [ db ]
+    uses: ./.github/workflows/backend-stage.yml
+
+  # Собирается контейнер фронтенд
+  frontend:
+    uses: ./.github/workflows/frontend-stage.yml
+
+  # Собирается контейнер gateway
+  gateway:
+    needs: [ backend, frontend ]
+    uses: ./.github/workflows/gateway-stage.yml
+
+  # Прогоняются API тесты
+  automation-api:
+    needs: [ db, backend, frontend, gateway ]
+    uses: ./.github/workflows/automation.yml
+    with:
+      package: api
+
+  # Прогоняются UI тесты
+  automation-ui:
+    needs: [ db, backend, frontend, gateway ]
+    uses: ./.github/workflows/automation.yml
+    with:
+      package: ui
+
+  manual-prod-approval:
+    needs: [ automation-api, automation-ui]
+    runs-on: ubuntu-latest
+    environment: 'prod'
+    steps:
+      - name: Approve backend and frontend to production
+        run: echo Approved to production
+

@@ -1,0 +1,22 @@
+name: Deploy backend
+
+on: workflow_call
+
+jobs:
+  image: openmrs/openmrs-reference-application-3-backend:${TAG:-qa}
+  restart: "unless-stopped"
+  depends_on:
+    - db
+  environment:
+    OMRS_CONFIG_MODULE_WEB_ADMIN: "true"
+    OMRS_CONFIG_AUTO_UPDATE_DATABASE: "true"
+    OMRS_CONFIG_CREATE_TABLES: "true"
+    OMRS_CONFIG_CONNECTION_SERVER: db
+    OMRS_CONFIG_CONNECTION_DATABASE: openmrs
+    OMRS_CONFIG_CONNECTION_USERNAME: ${OMRS_DB_USER:-openmrs}
+    OMRS_CONFIG_CONNECTION_PASSWORD: ${OMRS_DB_PASSWORD:-openmrs}
+  healthcheck:
+    test: [ "CMD", "curl", "-f", "http://localhost:8080/openmrs" ]
+    timeout: 5s
+  volumes:
+    - openmrs-data:/openmrs/data
