@@ -6,7 +6,7 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 
 
-public class LoginPage extends BasePage {
+public class LoginPage extends BasePage<LoginPage> {
     private final Locator USERNAME_INPUT;
     private final Locator PASSWORD_INPUT;
     private final Locator CONTINUE_BUTTON;
