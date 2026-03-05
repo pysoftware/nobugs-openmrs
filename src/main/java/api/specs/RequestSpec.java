@@ -1,6 +1,7 @@
 package api.specs;
 
 import api.configs.Config;
+import com.github.viclovsky.swagger.coverage.SwaggerCoverageRestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.Filter;
 import io.restassured.filter.log.RequestLoggingFilter;
@@ -14,6 +15,7 @@ import lombok.Getter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 import static io.restassured.RestAssured.given;
 
@@ -37,6 +39,7 @@ public class RequestSpec {
                 .setContentType(ContentType.JSON)
                 .addHeader("Accept", "application/json")
                 .addFilters(LOGGING_FILTERS)
+                .addFilter(new SwaggerCoverageRestAssured())
                 .build();
     }
 
