@@ -22,14 +22,14 @@ jobs:
 
   # Прогоняются API тесты
   automation-api:
-    needs: [ db, backend, frontend, gateway ]
+    needs: [ app ]
     uses: ./.github/workflows/automation.yml
     with:
       package: api
 
   # Прогоняются UI тесты
   automation-ui:
-    needs: [ db, backend, frontend, gateway ]
+    needs: [ app ]
     uses: ./.github/workflows/automation.yml
     with:
       package: ui
