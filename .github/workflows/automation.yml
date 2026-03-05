@@ -19,9 +19,10 @@ jobs:
         with:
           java-version: '21'
           distribution: 'zulu'
+          cache: maven
 
       - name: Validate Checkstyle
-        run: ./mvnw validate
+        run: mvn validate
 
   run-tests:
     needs: validate-checkstyle
@@ -30,7 +31,7 @@ jobs:
       - name: Run tests
         continue-on-error: true
 
-        run: ./mvnw test
+        run: mvn test
         # Создаем репорт с покрытием API тестов, основанном на Swagger.
         # Документация: https://github.com/viclovsky/swagger-coverage
         # Обязательно добавить фильтр SwaggerCoverageRestAssured в RestAssured
