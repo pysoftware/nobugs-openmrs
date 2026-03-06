@@ -34,7 +34,7 @@ jobs:
         run: |
           timeout 900s bash -c '
             until docker compose ps --format json | \
-                  jq -e "all(.[]?; select(.State != \"healthy\" and .State != \"running\")) | length == 0" > /dev/null; do
+                  jq -s "all(.[]?; select(.State != \"healthy\" and .State != \"running\")) | length == 0" > /dev/null; do
               echo "Waiting... $(date +%H:%M:%S)"
               sleep 10
             done
