@@ -9,11 +9,8 @@ jobs:
     timeout-minutes: 60
 
     steps:
-      - name: Checkout (если в твоём репо есть что-то нужное — .env, скрипты и т.д.)
+      - name: Checkout (для доступа к тестам и конфигам)
         uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Clone OpenMRS Reference Application 3.x
         run: |
