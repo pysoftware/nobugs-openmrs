@@ -38,9 +38,6 @@ jobs:
           auto_update_database=true
           create_tables=true
           add_demo_data=false
-#          referencedemodata.createDemoPatientsOnNextStartup=0   # 0 пациентов → отключить генерацию
-#          referencedemodata.enabled=false                        # если модуль поддерживает
-#          module.referencedemodata.start=false                   # попытка отключить модуль
           module.allow_web_admin=true
           # Можно добавить больше настроек, если нужны кастомные модули / admin пароль и т.д.
           EOF
@@ -131,7 +128,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Run tests # Запуск тестов с Maven
-        run: ./mvnw clean test
+        run: ./mvn clean test
 #
 #      # Запуск тестов с фильтром по пакету
 #      - name: Run tests (${{ inputs.package }})
