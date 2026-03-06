@@ -17,7 +17,7 @@ on:
 jobs:
   run-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 60
 
     steps:
       - name: Checkout repository
@@ -48,46 +48,33 @@ jobs:
 
       - name: Wait for OpenMRS to be fully ready
         run: |
-          timeout 1200 bash -c '
-          set -euo pipefail
-    
-          echo "→ Waiting for Tomcat / basic backend response..."
-          until curl -s -f -o /dev/null http://localhost/openmrs; do
-           echo "  Backend not responding yet... $(date +%H:%M:%S)"
-           sleep 5
-          done
-          echo "→ Backend is responding"
-    
-          echo "→ Waiting for SPA frontend..."
-          until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
-           echo "  SPA not responding yet... $(date +%H:%M:%S)"
-           sleep 5
-          done
-          echo "→ SPA is responding"
-    
-          echo "→ Waiting for core OpenMRS session endpoint..."
-          until curl -s -f http://localhost/openmrs/ws/rest/v1/session | grep -q "\"authenticated\""; do
-           echo "  Session endpoint not ready yet... $(date +%H:%M:%S)"
-           sleep 8
-          done
-          echo "→ Session endpoint is ready"
-    
-          echo "→ Waiting for concepts endpoint (DB + content fully initialized)..."
-          until curl -s http://localhost/openmrs/ws/rest/v1/concept | grep -q "\"results\""; do
-           echo "  Concepts not loaded yet... $(date +%H:%M:%S)"
-           sleep 10
-          done
-          echo "→ Concepts loaded → OpenMRS fully ready!"
+          timeout 900 bash -c '
+            set -euo pipefail
+
+            echo "→ Waiting for basic backend..."
+            until curl -s -f -o /dev/null http://localhost/openmrs; do sleep 5; done
+
+            echo "→ Waiting for SPA..."
+            until curl -s -f -o /dev/null http://localhost/openmrs/spa; do sleep 5; done
+
+            echo "→ Waiting for session..."
+            until curl -s -f http://localhost/openmrs/ws/rest/v1/session | grep -q "\"authenticated\""; do sleep 8; done
+
+            # Concepts — мягче, т.к. без demo может быть пусто
+            echo "→ Waiting for concepts endpoint (at least responds)..."
+            until curl -s -f -o /dev/null http://localhost/openmrs/ws/rest/v1/concept; do
+              echo "  Concepts endpoint not responding yet... $(date +%H:%M:%S)"
+              sleep 10
+            done
+            echo "→ Concepts endpoint responds (even if empty) → ready for tests!"
           ' || {
-          echo "ERROR: Timeout after 20 minutes — OpenMRS did not fully initialize"
-          echo "Docker ps:"
-          docker compose -f refapp/docker-compose.yml ps
-          echo "Last 100 lines of backend logs:"
-          docker compose -f refapp/docker-compose.yml logs backend | tail -n 100
-          exit 1
+            echo "Timeout!"
+            docker compose -f refapp/docker-compose.yml ps
+            docker compose -f refapp/docker-compose.yml logs backend | tail -n 150
+            exit 1
           }
-          
-          echo "SUCCESS: OpenMRS is ready for testing"
+
+          echo "OpenMRS ready!"
 
 #      - name: Wait for OpenMRS to be ready
 #        run: |
