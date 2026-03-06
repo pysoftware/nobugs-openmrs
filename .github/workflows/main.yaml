@@ -37,19 +37,19 @@ jobs:
           docker compose pull --quiet || true
           docker compose up -d
 
-#      - name: Wait for OpenMRS ready
-#        run: |
-#          timeout 900s bash -c '
-#            until curl -s -f -o /dev/null http://localhost/openmrs; do
-#              echo "Waiting for backend... $(date +%H:%M:%S)"
-#              sleep 5
-#            done
-#            until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
-#              echo "Waiting for SPA... $(date +%H:%M:%S)"
-#              sleep 5
-#            done
-#          ' || { echo "Timeout"; docker compose -f refapp/docker-compose.yml ps; exit 1; }
-#          echo "OpenMRS ready (backend + SPA)"
+      - name: Wait for OpenMRS ready
+        run: |
+          timeout 900s bash -c '
+            until curl -s -f -o /dev/null http://localhost/openmrs; do
+              echo "Waiting for backend... $(date +%H:%M:%S)"
+              sleep 5
+            done
+            until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
+              echo "Waiting for SPA... $(date +%H:%M:%S)"
+              sleep 5
+            done
+          ' || { echo "Timeout"; docker compose -f refapp/docker-compose.yml ps; exit 1; }
+          echo "OpenMRS ready (backend + SPA)"
 
       # ────────────────────────────────────────────────
       # Общие шаги для Maven (API-тесты)
