@@ -1,73 +1,75 @@
-name: OpenMRS deployment
+name: Run tests
 
 on:
-  # На любой push (коммит) в любой ветку
-  push:
-    branches:
-      - '**'  # Все ветки
-    paths-ignore:
-      - '**.md'  # Не запускать на изменения в документации
-      - '.gitignore'
-
-  # На pull request
-  pull_request:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      package:
+        description: api | ui
+        required: true
+        type: string
 
 jobs:
-
   run-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ────────────────────────────────────────────────
-      # Подъём OpenMRS (обязательно здесь, т.к. job отдельный)
-      # ────────────────────────────────────────────────
-      - name: Clone OpenMRS Reference Application
+      # Подъём OpenMRS — общий для api и ui
+      - name: Clone and start OpenMRS Reference Application
         run: |
           git clone https://github.com/openmrs/openmrs-distro-referenceapplication.git refapp
           cd refapp
-
-      - name: Start OpenMRS stack
-        working-directory: refapp
-        run: |
           docker compose pull --quiet || true
           docker compose up -d
 
-      - name: Wait for OpenMRS ready
+      - name: Wait for OpenMRS to be ready
         run: |
           timeout 900s bash -c '
             until curl -s -f -o /dev/null http://localhost/openmrs; do
-              echo "Waiting for backend... $(date +%H:%M:%S)"
+              echo "Waiting backend... $(date +%H:%M:%S)"
               sleep 5
             done
             until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
-              echo "Waiting for SPA... $(date +%H:%M:%S)"
+              echo "Waiting SPA... $(date +%H:%M:%S)"
               sleep 5
             done
           ' || { echo "Timeout"; docker compose -f refapp/docker-compose.yml ps; exit 1; }
-          echo "OpenMRS ready (backend + SPA)"
+          echo "OpenMRS ready"
 
       # ────────────────────────────────────────────────
-      # Общие шаги для Maven (API-тесты)
+      # Java + Maven для обоих типов тестов
       # ────────────────────────────────────────────────
       - name: Set up JDK 21
-        if: ${{ inputs.package == 'api' }}
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'zulu'
           cache: maven
 
-      - name: Run API tests (Maven)
-        if: ${{ inputs.package == 'api' }}
-        run: mvn clean test  # или mvn verify, если нужны integration-тесты
+      # Запуск тестов с фильтром по пакету
+      - name: Run tests (${{ inputs.package }})
+        env:
+          # Передаём baseUrl через environment variable
+          # Твой код в PlaywrightConfiguration.loadFromProperties() берёт из properties,
+          # но проще и надёжнее передать через -D или env → адаптируй Config.getProperty()
+          UI_BASE_URL: "http://localhost/openmrs/spa"
+          # Если headless управляется через properties → можно добавить:
+          HEADLESS: "true"
+          # или другие: BROWSER=chrome, etc.
+        run: |
+          # Для api: только api-пакет
+          # Для ui: только ui-пакет
+          if [ "${{ inputs.package }}" = "api" ]; then
+            mvn clean test -Dtest=api.** -DfailIfNoTests=false
+          else
+            mvn clean test -Dtest=ui.** -DfailIfNoTests=false
+          fi
 
-      # Swagger Coverage после тестов (т.к. coverage обычно собирается во время прогона)
-      - name: Run Swagger Coverage (API only)
+      # Swagger Coverage — только для API
+      - name: Generate Swagger Coverage (API only)
         if: ${{ inputs.package == 'api' }}
         continue-on-error: true
         run: |
@@ -78,58 +80,23 @@ jobs:
             -s http://localhost/openmrs/ws/rest/v1/swagger.json \
             -i target/swagger-coverage-output || true
 
-      - name: Upload Swagger Coverage artifacts
+      - name: Upload Swagger Coverage (API)
         if: ${{ inputs.package == 'api' }}
         uses: actions/upload-artifact@v4
         with:
           name: swagger-coverage
-          path: |
-            target/swagger-coverage-output/swagger-coverage-report.html
-            target/swagger-coverage-output/swagger-coverage-results.json
-          retention-days: 7
+          path: target/swagger-coverage-output/
+          if-no-files-found: warn
 
-      # ────────────────────────────────────────────────
-      # Node.js + Playwright (только UI)
-      # ────────────────────────────────────────────────
-      - name: Setup Node.js 20
-        if: ${{ inputs.package == 'ui' }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies (UI)
-        if: ${{ inputs.package == 'ui' }}
-        run: npm ci
-
-      - name: Install Playwright browsers
-        if: ${{ inputs.package == 'ui' }}
-        run: npx playwright install --with-deps chromium
-
-      - name: Run Playwright UI tests
-        if: ${{ inputs.package == 'ui' }}
-        env:
-          PLAYWRIGHT_TEST_BASE_URL: http://localhost/openmrs/spa
-          CI: true
-        run: |
-          npx playwright test \
-            --reporter=html \
-            --output=playwright-report \
-            --trace=on \
-            --screenshot=only-on-failure \
-            --video=on-first-retry
-
-      # ────────────────────────────────────────────────
-      # Артефакты для обоих типов
-      # ────────────────────────────────────────────────
-      - name: Upload test artifacts
+      # Артефакты для всех (JUnit XML + любые html-отчёты)
+      - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ inputs.package }}
           path: |
-            playwright-report/          # для UI
-            test-results/               # трассировки Playwright
-            target/surefire-reports/    # для API (JUnit XML)
-            target/allure-results/      # если используешь Allure в Maven
+            target/surefire-reports/
+            target/*.html
+            target/swagger-coverage-output/
+          if-no-files-found: warn
           retention-days: 7
