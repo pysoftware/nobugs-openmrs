@@ -37,7 +37,10 @@ jobs:
           connection.password=openmrs
           auto_update_database=true
           create_tables=true
-          add_demo_data=false                # false = быстрее (рекомендую для тестов)
+          add_demo_data=false
+          referencedemodata.createDemoPatientsOnNextStartup=0   # 0 пациентов → отключить генерацию
+          referencedemodata.enabled=false                        # если модуль поддерживает
+          module.referencedemodata.start=false                   # попытка отключить модуль
           module.allow_web_admin=true
           # Можно добавить больше настроек, если нужны кастомные модули / admin пароль и т.д.
           EOF
@@ -48,33 +51,53 @@ jobs:
 
       - name: Wait for OpenMRS to be fully ready
         run: |
-          timeout 900 bash -c '
+          timeout 3600 bash -c '
             set -euo pipefail
 
             echo "→ Waiting for basic backend..."
-            until curl -s -f -o /dev/null http://localhost/openmrs; do sleep 5; done
+            until curl -s -f -o /dev/null http://localhost/openmrs; do
+              echo "  Backend not responding... $(date +%H:%M:%S)"
+              sleep 5
+            done
+            echo "→ Backend OK"
 
             echo "→ Waiting for SPA..."
-            until curl -s -f -o /dev/null http://localhost/openmrs/spa; do sleep 5; done
+            until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
+              echo "  SPA not responding... $(date +%H:%M:%S)"
+              sleep 5
+            done
+            echo "→ SPA OK"
 
             echo "→ Waiting for session..."
-            until curl -s -f http://localhost/openmrs/ws/rest/v1/session | grep -q "\"authenticated\""; do sleep 8; done
+            until curl -s -f http://localhost/openmrs/ws/rest/v1/session | grep -q "\"authenticated\""; do
+              echo "  Session not ready... $(date +%H:%M:%S)"
+              sleep 8
+            done
+            echo "→ Session OK"
 
-            # Concepts — мягче, т.к. без demo может быть пусто
-            echo "→ Waiting for concepts endpoint (at least responds)..."
+            echo "→ Waiting for concepts endpoint to respond (200 OK)..."
             until curl -s -f -o /dev/null http://localhost/openmrs/ws/rest/v1/concept; do
-              echo "  Concepts endpoint not responding yet... $(date +%H:%M:%S)"
+              echo "  Concepts endpoint not ready (no 200)... $(date +%H:%M:%S)"
               sleep 10
             done
-            echo "→ Concepts endpoint responds (even if empty) → ready for tests!"
+            echo "→ Concepts endpoint responds → считаем приложение готовым (даже без полной демо-нагрузки)"
+
+            # Опционально: логин как admin и проверка /patient (если тесты используют пациентов)
+            echo "→ Проверка логина admin..."
+            SESSION=$(curl -s -X POST -d "username=admin&password=Admin123" http://localhost/openmrs/ws/rest/v1/session | jq -r .sessionId)
+            if [ -z "$SESSION" ] || [ "$SESSION" = "null" ]; then
+              echo "Login failed!"
+              exit 1
+            fi
+            echo "→ Login OK (sessionId: $SESSION)"
           ' || {
             echo "Timeout!"
             docker compose -f refapp/docker-compose.yml ps
-            docker compose -f refapp/docker-compose.yml logs backend | tail -n 150
+            docker compose -f refapp/docker-compose.yml logs backend | tail -n 200
             exit 1
           }
 
-          echo "OpenMRS ready!"
+          echo "OpenMRS ready for tests!"
 
 #      - name: Wait for OpenMRS to be ready
 #        run: |
