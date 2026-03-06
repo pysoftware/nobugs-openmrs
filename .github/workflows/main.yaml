@@ -25,34 +25,55 @@ jobs:
 
       - name: Clone and start OpenMRS Reference Application
         run: |
+          # Клонируем официальный репозиторий
           git clone https://github.com/openmrs/openmrs-distro-referenceapplication.git refapp
           cd refapp
-      
-          # Создаём директорию и файл конфигурации
+
+          # Создаём директорию для данных (чтобы volume её подхватил)
           mkdir -p openmrs-data
+
+          # Создаём файл конфигурации с отключением demo-данных
           cat > openmrs-data/openmrs-runtime.properties << 'EOF'
+          # Основные настройки подключения к БД
           connection.url=jdbc:mysql://db:3306/openmrs?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
           connection.driver_class=com.mysql.cj.jdbc.Driver
           connection.username=openmrs
           connection.password=openmrs
+
+          # Автоматическое создание и обновление БД
           auto_update_database=true
           create_tables=true
+
+          # КРИТИЧНО: отключаем генерацию демо-данных, чтобы избежать ошибки в ReferenceDemoDataActivator
           add_demo_data=false
-          # Форсированное отключение demo-модуля
+
+          # Дополнительные флаги отключения demo-генерации (на всякий случай)
           referencedemodata.enabled=false
           referencedemodata.createDemoPatientsOnNextStartup=0
           referencedemodata.createDemoVisitsOnNextStartup=0
           referencedemodata.createDemoEncountersOnNextStartup=0
           referencedemodata.createDemoObsOnNextStartup=0
-          module.referencedemodata.start=false   # попытка не стартовать модуль
+
+          # Разрешаем веб-админку модулей
           module.allow_web_admin=true
-          module.allow_web_admin=true
-          # Можно добавить больше настроек, если нужны кастомные модули / admin пароль и т.д.
+
+          # Можно добавить другие настройки, если нужно
+          # Например: admin_password=Admin123 (но по умолчанию уже Admin123)
           EOF
-      
-          # Запускаем стек
+
+          # Debug: показываем содержимое файла (чтобы убедиться, что он создался)
+          echo "Содержимое openmrs-runtime.properties:"
+          cat openmrs-data/openmrs-runtime.properties
+          echo "-------------------------------------"
+
+          # Pull образов заранее (ускоряет запуск)
           docker compose pull --quiet || true
+
+          # Запускаем стек
           docker compose up -d
+
+          # Debug: проверяем, что контейнеры запустились
+          docker compose ps
 
       - name: Wait for OpenMRS to be fully ready
         run: |
