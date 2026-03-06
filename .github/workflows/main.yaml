@@ -28,6 +28,22 @@ jobs:
         run: |
           git clone https://github.com/openmrs/openmrs-distro-referenceapplication.git refapp
           cd refapp
+          
+          # Создаём openmrs-runtime.properties с автоматической настройкой
+          mkdir -p data  # если volume не создаст автоматически
+          cat > data/openmrs-runtime.properties << 'EOF'
+          # Базовые настройки для автоматического старта
+          connection.url=jdbc:mysql://db:3306/openmrs?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
+          connection.driver_class=com.mysql.cj.jdbc.Driver
+          connection.username=openmrs
+          connection.password=openmrs
+          auto_update_database=true
+          create_tables=true
+          add_demo_data=false          # false — чтобы быстрее (можно true, если нужны demo-пациенты)
+          module.allow_web_admin=true
+          EOF
+          
+          # Запускаем
           docker compose pull --quiet || true
           docker compose up -d
           
