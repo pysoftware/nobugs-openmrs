@@ -72,13 +72,6 @@ jobs:
           done
           echo "→ Session OK"
           
-          echo "→ Waiting for Service Queues page (real user endpoint)..."
-          until curl -s -f -o /dev/null http://localhost/openmrs/spa/home/service-queues; do
-           echo "  Service-queues page not ready (no 200)... $(date +%H:%M:%S)"
-           sleep 10
-          done
-          echo "→ Service-queues page responds → считаем приложение полностью готовым"
-          
           # Финальная проверка — попытка логина (очень надёжный маркер)
           echo "→ Final check: login as admin..."
           SESSION=$(curl -s -X POST -d "username=admin&password=Admin123" http://localhost/openmrs/ws/rest/v1/session | jq -r .sessionId)
