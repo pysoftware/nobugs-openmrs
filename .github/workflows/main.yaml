@@ -1,12 +1,18 @@
 name: Run tests
 
 on:
-  workflow_call:
-    inputs:
-      package:
-        description: api | ui
-        required: true
-        type: string
+  # На любой push (коммит) в любой ветку
+  push:
+    branches:
+      - '**'  # Все ветки
+    paths-ignore:
+      - '**.md'  # Не запускать на изменения в документации
+      - '.gitignore'
+
+  # На pull request
+  pull_request:
+    branches:
+      - main
 
 jobs:
   run-tests:
