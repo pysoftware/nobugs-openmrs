@@ -30,20 +30,62 @@ jobs:
           cd refapp
           docker compose pull --quiet || true
           docker compose up -d
-
-      - name: Wait for OpenMRS to be ready
+          
+      - name: Wait for OpenMRS to be fully ready
         run: |
           timeout 900s bash -c '
-            until curl -s -f -o /dev/null http://localhost/openmrs; do
-              echo "Waiting backend... $(date +%H:%M:%S)"
-              sleep 5
-            done
-            until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
-              echo "Waiting SPA... $(date +%H:%M:%S)"
-              sleep 5
-            done
-          ' || { echo "Timeout"; docker compose -f refapp/docker-compose.yml ps; exit 1; }
-          echo "OpenMRS ready"
+          set -euo pipefail
+          
+          echo "Waiting for backend basic availability..."
+          until curl -s -f -o /dev/null http://localhost/openmrs; do
+           echo "Backend not yet responding... $(date +%H:%M:%S)"
+           sleep 5
+          done
+          echo "Backend responds (Tomcat up)"
+          
+          echo "Waiting for SPA..."
+          until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
+           echo "SPA not yet responding... $(date +%H:%M:%S)"
+           sleep 5
+          done
+          echo "SPA responds"
+          
+          echo "Waiting for session endpoint (core ready)..."
+          until curl -s -f http://localhost/openmrs/ws/rest/v1/session | grep -q '"authenticated": false'; do
+           echo "Session not ready yet... $(date +%H:%M:%S)"
+           sleep 8
+          done
+          echo "Session endpoint ready (OpenMRS core initialized)"
+          
+          echo "Waiting for concepts loaded (demo data / DB fully ready)..."
+          until curl -s http://localhost/openmrs/ws/rest/v1/concept | grep -q '"results"'; do
+           echo "Concepts not loaded yet... $(date +%H:%M:%S)"
+           sleep 10
+          done
+          echo "Concepts endpoint returns results → application fully ready!"
+      
+          ' || {
+          echo "Timeout — OpenMRS not fully ready after 15 min"
+          docker compose -f refapp/docker-compose.yml ps
+          docker compose -f refapp/docker-compose.yml logs backend | tail -n 50
+          exit 1
+          }
+      
+          echo "OpenMRS is fully ready!"
+
+#      - name: Wait for OpenMRS to be ready
+#        run: |
+#          timeout 900s bash -c '
+#            until curl -s -f -o /dev/null http://localhost/openmrs; do
+#              echo "Waiting backend... $(date +%H:%M:%S)"
+#              sleep 5
+#            done
+#            until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
+#              echo "Waiting SPA... $(date +%H:%M:%S)"
+#              sleep 5
+#            done
+#          ' || { echo "Timeout"; docker compose -f refapp/docker-compose.yml ps; exit 1; }
+#          echo "OpenMRS ready"
 
       # ────────────────────────────────────────────────
       # Java + Maven для обоих типов тестов
@@ -52,8 +94,15 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'zulu'
-          cache: maven
+          distribution: 'temurin'
+
+      - name: Cache Maven repository # Кэширование репозитория Maven для ускорения сборки
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       # Запуск тестов с фильтром по пакету
       - name: Run tests (${{ inputs.package }})
