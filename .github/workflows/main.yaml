@@ -38,6 +38,14 @@ jobs:
           auto_update_database=true
           create_tables=true
           add_demo_data=false
+          # Форсированное отключение demo-модуля
+          referencedemodata.enabled=false
+          referencedemodata.createDemoPatientsOnNextStartup=0
+          referencedemodata.createDemoVisitsOnNextStartup=0
+          referencedemodata.createDemoEncountersOnNextStartup=0
+          referencedemodata.createDemoObsOnNextStartup=0
+          module.referencedemodata.start=false   # попытка не стартовать модуль
+          module.allow_web_admin=true
           module.allow_web_admin=true
           # Можно добавить больше настроек, если нужны кастомные модули / admin пароль и т.д.
           EOF
