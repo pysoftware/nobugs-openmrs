@@ -49,52 +49,53 @@ jobs:
       - name: Wait for OpenMRS to be fully ready
         run: |
           timeout 3600 bash -c '
-            set -euo pipefail
-
-            echo "→ Waiting for basic backend..."
-            until curl -s -f -o /dev/null http://localhost/openmrs; do
-              echo "  Backend not responding... $(date +%H:%M:%S)"
-              sleep 5
-            done
-            echo "→ Backend OK"
-
-            echo "→ Waiting for SPA..."
-            until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
-              echo "  SPA not responding... $(date +%H:%M:%S)"
-              sleep 5
-            done
-            echo "→ SPA OK"
-
-            echo "→ Waiting for session..."
-            until curl -s -f http://localhost/openmrs/ws/rest/v1/session | grep -q "\"authenticated\""; do
-              echo "  Session not ready... $(date +%H:%M:%S)"
-              sleep 8
-            done
-            echo "→ Session OK"
-
-            echo "→ Waiting for concepts endpoint to respond (200 OK)..."
-            until curl -s -f -o /dev/null http://localhost/openmrs/spa/home/service-queues; do
-              echo "  Service-queues endpoint not ready (no 200)... $(date +%H:%M:%S)"
-              sleep 10
-            done
-            echo "→ Service-queues endpoint responds → считаем приложение готовым (даже без полной демо-нагрузки)"
-
-            # Опционально: логин как admin и проверка /patient (если тесты используют пациентов)
-            echo "→ Проверка логина admin..."
-            SESSION=$(curl -s -X POST -d "username=admin&password=Admin123" http://localhost/openmrs/ws/rest/v1/session | jq -r .sessionId)
-            if [ -z "$SESSION" ] || [ "$SESSION" = "null" ]; then
-              echo "Login failed!"
-              exit 1
-            fi
-            echo "→ Login OK (sessionId: $SESSION)"
+          set -euo pipefail
+          
+          echo "→ Waiting for basic backend..."
+          until curl -s -f -o /dev/null http://localhost/openmrs; do
+           echo "  Backend not responding... $(date +%H:%M:%S)"
+           sleep 5
+          done
+          echo "→ Backend OK"
+          
+          echo "→ Waiting for SPA root..."
+          until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
+           echo "  SPA root not responding... $(date +%H:%M:%S)"
+           sleep 5
+          done
+          echo "→ SPA root OK"
+          
+          echo "→ Waiting for session..."
+          until curl -s -f http://localhost/openmrs/ws/rest/v1/session | grep -q "\"authenticated\""; do
+           echo "  Session not ready... $(date +%H:%M:%S)"
+           sleep 8
+          done
+          echo "→ Session OK"
+          
+          echo "→ Waiting for Service Queues page (real user endpoint)..."
+          until curl -s -f -o /dev/null http://localhost/openmrs/spa/home/service-queues; do
+           echo "  Service-queues page not ready (no 200)... $(date +%H:%M:%S)"
+           sleep 10
+          done
+          echo "→ Service-queues page responds → считаем приложение полностью готовым"
+          
+          # Финальная проверка — попытка логина (очень надёжный маркер)
+          echo "→ Final check: login as admin..."
+          SESSION=$(curl -s -X POST -d "username=admin&password=Admin123" http://localhost/openmrs/ws/rest/v1/session | jq -r .sessionId)
+          if [ -z "$SESSION" ] || [ "$SESSION" = "null" ]; then
+           echo "Login failed!"
+           exit 1
+          fi
+          echo "→ Login OK (sessionId получен) → OpenMRS ready for tests!"
           ' || {
-            echo "Timeout!"
-            docker compose -f refapp/docker-compose.yml ps
-            docker compose -f refapp/docker-compose.yml logs backend | tail -n 200
-            exit 1
+          echo "Timeout after 60 minutes — OpenMRS did not fully initialize"
+          docker compose -f refapp/docker-compose.yml ps
+          docker compose -f refapp/docker-compose.yml logs backend | tail -n 300
+          exit 1
           }
-
+      
           echo "OpenMRS ready for tests!"
+            
 
 #      - name: Wait for OpenMRS to be ready
 #        run: |
