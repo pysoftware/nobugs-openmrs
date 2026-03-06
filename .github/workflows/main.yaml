@@ -16,35 +16,120 @@ on:
 
 jobs:
 
-  # Поднимается OpenMRS
-  app:
-    uses: ./.github/workflows/app-stage.yml
-
-  # Прогоняются API тесты
-  automation-api:
-    needs: [ app ]
-    uses: ./.github/workflows/automation.yml
-    with:
-      package: api
-
-  # Прогоняются UI тесты
-  automation-ui:
-    needs: [ app ]
-    uses: ./.github/workflows/automation.yml
-    with:
-      package: ui
-
-  cleanup:
-    needs: [ app, automation-api, automation-ui ]
-    if: always()
+  run-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: Stop and remove all containers from this run
-        run: |
-          docker stop $(docker ps -q) || true
-          docker rm -f $(docker ps -aq) || true
-          
-          docker volume rm $(docker volume ls -q) || true
-          
-          docker system prune -f --volumes || true
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      # ────────────────────────────────────────────────
+      # Подъём OpenMRS (обязательно здесь, т.к. job отдельный)
+      # ────────────────────────────────────────────────
+      - name: Clone OpenMRS Reference Application
+        run: |
+          git clone https://github.com/openmrs/openmrs-distro-referenceapplication.git refapp
+          cd refapp
+
+      - name: Start OpenMRS stack
+        working-directory: refapp
+        run: |
+          docker compose pull --quiet || true
+          docker compose up -d
+
+#      - name: Wait for OpenMRS ready
+#        run: |
+#          timeout 900s bash -c '
+#            until curl -s -f -o /dev/null http://localhost/openmrs; do
+#              echo "Waiting for backend... $(date +%H:%M:%S)"
+#              sleep 5
+#            done
+#            until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
+#              echo "Waiting for SPA... $(date +%H:%M:%S)"
+#              sleep 5
+#            done
+#          ' || { echo "Timeout"; docker compose -f refapp/docker-compose.yml ps; exit 1; }
+#          echo "OpenMRS ready (backend + SPA)"
+
+      # ────────────────────────────────────────────────
+      # Общие шаги для Maven (API-тесты)
+      # ────────────────────────────────────────────────
+      - name: Set up JDK 21
+        if: ${{ inputs.package == 'api' }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'zulu'
+          cache: maven
+
+      - name: Run API tests (Maven)
+        if: ${{ inputs.package == 'api' }}
+        run: mvn clean test  # или mvn verify, если нужны integration-тесты
+
+      # Swagger Coverage после тестов (т.к. coverage обычно собирается во время прогона)
+      - name: Run Swagger Coverage (API only)
+        if: ${{ inputs.package == 'api' }}
+        continue-on-error: true
+        run: |
+          curl -L https://github.com/viclovsky/swagger-coverage/releases/latest/download/swagger-coverage-commandline.zip -o sc.zip
+          unzip sc.zip
+          chmod +x swagger-coverage-commandline/bin/swagger-coverage-commandline
+          ./swagger-coverage-commandline/bin/swagger-coverage-commandline \
+            -s http://localhost/openmrs/ws/rest/v1/swagger.json \
+            -i target/swagger-coverage-output || true
+
+      - name: Upload Swagger Coverage artifacts
+        if: ${{ inputs.package == 'api' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: swagger-coverage
+          path: |
+            target/swagger-coverage-output/swagger-coverage-report.html
+            target/swagger-coverage-output/swagger-coverage-results.json
+          retention-days: 7
+
+      # ────────────────────────────────────────────────
+      # Node.js + Playwright (только UI)
+      # ────────────────────────────────────────────────
+      - name: Setup Node.js 20
+        if: ${{ inputs.package == 'ui' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (UI)
+        if: ${{ inputs.package == 'ui' }}
+        run: npm ci
+
+      - name: Install Playwright browsers
+        if: ${{ inputs.package == 'ui' }}
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright UI tests
+        if: ${{ inputs.package == 'ui' }}
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: http://localhost/openmrs/spa
+          CI: true
+        run: |
+          npx playwright test \
+            --reporter=html \
+            --output=playwright-report \
+            --trace=on \
+            --screenshot=only-on-failure \
+            --video=on-first-retry
+
+      # ────────────────────────────────────────────────
+      # Артефакты для обоих типов
+      # ────────────────────────────────────────────────
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ inputs.package }}
+          path: |
+            playwright-report/          # для UI
+            test-results/               # трассировки Playwright
+            target/surefire-reports/    # для API (JUnit XML)
+            target/allure-results/      # если используешь Allure в Maven
+          retention-days: 7
