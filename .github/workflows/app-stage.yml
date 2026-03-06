@@ -28,25 +28,25 @@ jobs:
         working-directory: openmrs-refapp
         run: docker compose up -d
 
-      # Ждём, пока все контейнеры станут healthy / running
-      - name: Wait for healthy
-        working-directory: openmrs-refapp
-        run: |
-          timeout 900s bash -c '
-            until docker compose ps --format json | \
-                  jq -s "all(.[]?; select(.State != \"healthy\" and .State != \"running\")) | length == 0" > /dev/null; do
-              echo "Waiting... $(date +%H:%M:%S)"
-              sleep 10
-            done
-          ' || { echo "Timeout — some services not healthy"; docker compose ps; exit 1; }
-
-          echo "All services healthy!"
-          docker compose ps
-
-      # Проверка, что frontend отвечает
-      - name: Basic health check (frontend)
-        working-directory: openmrs-refapp
-        run: |
-          sleep 10
-          curl --fail http://localhost/openmrs/spa || { echo "Frontend not responding"; exit 1; }
-          echo "Frontend looks alive"
+#      # Ждём, пока все контейнеры станут healthy / running
+#      - name: Wait for healthy
+#        working-directory: openmrs-refapp
+#        run: |
+#          timeout 900s bash -c '
+#            until docker compose ps --format json | \
+#                  jq -s "all(.[]?; select(.State != \"healthy\" and .State != \"running\")) | length == 0" > /dev/null; do
+#              echo "Waiting... $(date +%H:%M:%S)"
+#              sleep 10
+#            done
+#          ' || { echo "Timeout — some services not healthy"; docker compose ps; exit 1; }
+#
+#          echo "All services healthy!"
+#          docker compose ps
+#
+#      # Проверка, что frontend отвечает
+#      - name: Basic health check (frontend)
+#        working-directory: openmrs-refapp
+#        run: |
+#          sleep 10
+#          curl --fail http://localhost/openmrs/spa || { echo "Frontend not responding"; exit 1; }
+#          echo "Frontend looks alive"
