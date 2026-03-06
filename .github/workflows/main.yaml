@@ -38,9 +38,9 @@ jobs:
           auto_update_database=true
           create_tables=true
           add_demo_data=false
-          referencedemodata.createDemoPatientsOnNextStartup=0   # 0 пациентов → отключить генерацию
-          referencedemodata.enabled=false                        # если модуль поддерживает
-          module.referencedemodata.start=false                   # попытка отключить модуль
+#          referencedemodata.createDemoPatientsOnNextStartup=0   # 0 пациентов → отключить генерацию
+#          referencedemodata.enabled=false                        # если модуль поддерживает
+#          module.referencedemodata.start=false                   # попытка отключить модуль
           module.allow_web_admin=true
           # Можно добавить больше настроек, если нужны кастомные модули / admin пароль и т.д.
           EOF
@@ -76,11 +76,11 @@ jobs:
             echo "→ Session OK"
 
             echo "→ Waiting for concepts endpoint to respond (200 OK)..."
-            until curl -s -f -o /dev/null http://localhost/openmrs/ws/rest/v1/concept; do
-              echo "  Concepts endpoint not ready (no 200)... $(date +%H:%M:%S)"
+            until curl -s -f -o /dev/null http://localhost/openmrs/spa/home/service-queues; do
+              echo "  Service-queues endpoint not ready (no 200)... $(date +%H:%M:%S)"
               sleep 10
             done
-            echo "→ Concepts endpoint responds → считаем приложение готовым (даже без полной демо-нагрузки)"
+            echo "→ Service-queues endpoint responds → считаем приложение готовым (даже без полной демо-нагрузки)"
 
             # Опционально: логин как admin и проверка /patient (если тесты используют пациентов)
             echo "→ Проверка логина admin..."
@@ -130,54 +130,57 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      # Запуск тестов с фильтром по пакету
-      - name: Run tests (${{ inputs.package }})
-        env:
-          # Передаём baseUrl через environment variable
-          # Твой код в PlaywrightConfiguration.loadFromProperties() берёт из properties,
-          # но проще и надёжнее передать через -D или env → адаптируй Config.getProperty()
-          UI_BASE_URL: "http://localhost/openmrs/spa"
-          # Если headless управляется через properties → можно добавить:
-          HEADLESS: "true"
-          # или другие: BROWSER=chrome, etc.
-        run: |
-          # Для api: только api-пакет
-          # Для ui: только ui-пакет
-          if [ "${{ inputs.package }}" = "api" ]; then
-            mvn clean test -Dtest=api.** -DfailIfNoTests=false
-          else
-            mvn clean test -Dtest=ui.** -DfailIfNoTests=false
-          fi
-
-      # Swagger Coverage — только для API
-      - name: Generate Swagger Coverage (API only)
-        if: ${{ inputs.package == 'api' }}
-        continue-on-error: true
-        run: |
-          curl -L https://github.com/viclovsky/swagger-coverage/releases/latest/download/swagger-coverage-commandline.zip -o sc.zip
-          unzip sc.zip
-          chmod +x swagger-coverage-commandline/bin/swagger-coverage-commandline
-          ./swagger-coverage-commandline/bin/swagger-coverage-commandline \
-            -s http://localhost/openmrs/ws/rest/v1/swagger.json \
-            -i target/swagger-coverage-output || true
-
-      - name: Upload Swagger Coverage (API)
-        if: ${{ inputs.package == 'api' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: swagger-coverage
-          path: target/swagger-coverage-output/
-          if-no-files-found: warn
-
-      # Артефакты для всех (JUnit XML + любые html-отчёты)
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ inputs.package }}
-          path: |
-            target/surefire-reports/
-            target/*.html
-            target/swagger-coverage-output/
-          if-no-files-found: warn
-          retention-days: 7
+      - name: Run tests # Запуск тестов с Maven
+        run: ./mvnw clean test
+#
+#      # Запуск тестов с фильтром по пакету
+#      - name: Run tests (${{ inputs.package }})
+#        env:
+#          # Передаём baseUrl через environment variable
+#          # Твой код в PlaywrightConfiguration.loadFromProperties() берёт из properties,
+#          # но проще и надёжнее передать через -D или env → адаптируй Config.getProperty()
+#          UI_BASE_URL: "http://localhost/openmrs/spa"
+#          # Если headless управляется через properties → можно добавить:
+#          HEADLESS: "true"
+#          # или другие: BROWSER=chrome, etc.
+#        run: |
+#          # Для api: только api-пакет
+#          # Для ui: только ui-пакет
+#          if [ "${{ inputs.package }}" = "api" ]; then
+#            mvn clean test -Dtest=api.** -DfailIfNoTests=false
+#          else
+#            mvn clean test -Dtest=ui.** -DfailIfNoTests=false
+#          fi
+#
+#      # Swagger Coverage — только для API
+#      - name: Generate Swagger Coverage (API only)
+#        if: ${{ inputs.package == 'api' }}
+#        continue-on-error: true
+#        run: |
+#          curl -L https://github.com/viclovsky/swagger-coverage/releases/latest/download/swagger-coverage-commandline.zip -o sc.zip
+#          unzip sc.zip
+#          chmod +x swagger-coverage-commandline/bin/swagger-coverage-commandline
+#          ./swagger-coverage-commandline/bin/swagger-coverage-commandline \
+#            -s http://localhost/openmrs/ws/rest/v1/swagger.json \
+#            -i target/swagger-coverage-output || true
+#
+#      - name: Upload Swagger Coverage (API)
+#        if: ${{ inputs.package == 'api' }}
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: swagger-coverage
+#          path: target/swagger-coverage-output/
+#          if-no-files-found: warn
+#
+#      # Артефакты для всех (JUnit XML + любые html-отчёты)
+#      - name: Upload test results
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: test-results-${{ inputs.package }}
+#          path: |
+#            target/surefire-reports/
+#            target/*.html
+#            target/swagger-coverage-output/
+#          if-no-files-found: warn
+#          retention-days: 7
