@@ -93,6 +93,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Prepare Maven Wrapper
+        run: |
+          if [ -f mvnw ]; then
+            chmod +x mvnw
+            echo "mvnw exists and made executable"
+          else
+            echo "ERROR: mvnw file not found in repo!"
+            exit 1
+          fi
+          
+          ./mvnw --version || echo "Wrapper failed to run --version"
+
       - name: Run tests # Запуск тестов с Maven
         run:
           chmod +x mvnw
