@@ -94,7 +94,9 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Run tests # Запуск тестов с Maven
-        run: ./mvnw clean test
+        run:
+          chmod +x mvnw
+          ./mvnw clean test
 #
 #      # Запуск тестов с фильтром по пакету
 #      - name: Run tests (${{ inputs.package }})
