@@ -60,26 +60,16 @@ jobs:
           done
           echo "→ Session OK"
           
-          echo "→ Ждём завершения старта OpenMRS в логах..."
-          until docker compose -f refapp/docker-compose.yml logs backend | grep -q "OpenMRS started successfully" || \
-          docker compose -f refapp/docker-compose.yml logs backend | grep -q "Started OpenMRS in"; do
-          echo "  Ещё не видно 'OpenMRS started successfully'... $(date +%H:%M:%S)"
-          sleep 10
+          echo "→ Final check: successful admin login..."
+          until curl -s -X POST -d "username=admin&password=Admin123" http://localhost/openmrs/ws/rest/v1/session | grep -q '"authenticated":true'; do
+           echo "  Admin login not succeeding yet... $(date +%H:%M:%S)"
+           sleep 10
           done
-          echo "→ Найдена строка успешного старта → считаем, что миграции и загрузка завершены"
-          
-          # Финальная проверка — попытка логина (очень надёжный маркер)
-          echo "→ Final check: login as admin..."
-          SESSION=$(curl -s -X POST -d "username=admin&password=Admin123" http://localhost/openmrs/ws/rest/v1/session | jq -r .sessionId)
-          if [ -z "$SESSION" ] || [ "$SESSION" = "null" ]; then
-           echo "Login failed!"
-           exit 1
-          fi
-          echo "→ Login OK (sessionId получен) → OpenMRS ready for tests!"
+          echo "→ Admin login successful → OpenMRS fully ready for tests!"
           ' || {
           echo "Timeout after 60 minutes — OpenMRS did not fully initialize"
-          docker compose -f refapp/docker-compose.yml ps
-          docker compose -f refapp/docker-compose.yml logs backend | tail -n 300
+          docker compose ps
+          docker compose logs backend | tail -n 300
           exit 1
           }
       
