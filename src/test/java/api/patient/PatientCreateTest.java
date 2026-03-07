@@ -5,14 +5,18 @@ import api.database.dao.CountDao;
 import api.database.dao.PatientDao;
 import api.database.dao.comparison.DaoAndModelAssertions;
 import api.generators.RandomModelGenerator;
+import api.generators.annotations.openmrs.OpenmrsIdGenerator;
 import api.models.*;
 import api.models.comparison.ModelAssertions;
 import api.requests.steps.DataBaseSteps;
+import api.requests.steps.PatientIdentifierTypeSteps;
 import api.requests.steps.PatientSteps;
 import common.annotations.PrepareData;
 import common.extensions.Prepare;
 import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -73,6 +77,11 @@ public class PatientCreateTest extends BaseTest {
         LocationResponse location = SessionStorage.get(Prepare.LOCATION, 1);
         PersonResponse person = SessionStorage.get(Prepare.PERSON, 1);
 
+        List<PatientIdentifierTypeResponse> patientIdentifierTypegetRequiredList =
+                PatientIdentifierTypeSteps.getPatientIdentifierTypeList().stream()
+                        .filter(PatientIdentifierTypeResponse::getRequired)
+                        .toList();
+
         PatientCreateFromExistingPersonRequest patientRequest =
                 RandomModelGenerator.generate(PatientCreateFromExistingPersonRequest.class,
                         fields -> {
@@ -80,6 +89,11 @@ public class PatientCreateTest extends BaseTest {
                                 identifier.setIdentifierType(patientIdentifierType.getUuid());
                                 identifier.setLocation(location.getUuid());
                                 identifier.setPreferred(false);
+                            }
+                            for (PatientIdentifierTypeResponse identifier : patientIdentifierTypegetRequiredList) {
+                                fields.getIdentifiers().add(new IdentifierRequest(
+                                        OpenmrsIdGenerator.generateOpenmrsId(), identifier.getUuid(), location.getUuid(), true)
+                                );
                             }
                             fields.setPerson(person.getUuid());
                         });
