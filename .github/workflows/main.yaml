@@ -75,7 +75,16 @@ jobs:
             docker compose ps
             exit 1
           }
-      
+          
+          # Ждём, пока OpenMRS полностью запустится и API станет доступным
+          # Проверяем REST endpoint systeminformation (требует admin:Admin123 по умолчанию)
+          echo "Ожидаем готовности OpenMRS"
+          timeout 1200 sh -c 'until curl -s -f -u admin:Admin123 http://localhost/openmrs/ws/rest/v1/systeminformation >/dev/null; do echo "Ещё ждём OpenMRS..."; sleep 10; done' || {
+          echo "Ошибка: OpenMRS не запустился за 20 минут"
+          docker compose logs backend
+          exit 1
+          }
+          
           echo "=== Этап 9: Финальная проверка — получаем системную информацию ==="
           curl -s -u admin:Admin123 http://localhost/openmrs/ws/rest/v1/systeminformation > systeminfo.json || { echo "Ошибка: не удалось получить systeminformation после таймаута"; exit 1; }
       
@@ -103,8 +112,8 @@ jobs:
 
       - name: Install Playwright browsers
         run: |
+          chmod +x mvnw .mvn/wrapper/mvnw* 2>/dev/null || true
           ./mvnw dependency:go-offline
-          # Запускаем CLI из зависимости
           java -cp "$(./mvnw dependency:build-classpath -q -Dmdep.outputFile=cp.txt && cat cp.txt)" \
             com.microsoft.playwright.CLI install --with-deps chromium
 
@@ -137,7 +146,7 @@ jobs:
             swagger-coverage-results.json
       # Загружаем историю Allure Report с специальной ветки gh-pages (https://allurereport.org/docs/integrations-github/)
       - name: Load test report history
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         if: always()
         continue-on-error: true
         with:
@@ -155,7 +164,7 @@ jobs:
 
       # Создаем пустую ветку gh-pages на основе инструкции https://gist.github.com/ramnathv/2227408
       - name: Publish test report
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         if: always()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
