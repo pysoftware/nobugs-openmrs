@@ -32,8 +32,7 @@ jobs:
           # Создаём директорию для персистентных данных (важно для volume)
           mkdir -p openmrs-data
       
-          # Создаём конфиг, чтобы максимально отключить демо-данные (на всякий случай)
-          # В новых версиях демо часто уже не грузится по умолчанию, но лучше перестраховаться
+          # Создаём конфиг, чтобы максимально отключить демо-данные 
           cat > openmrs-data/openmrs-runtime.properties << 'EOF'
           connection.url=jdbc:mysql://db:3306/openmrs?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
           connection.driver_class=com.mysql.cj.jdbc.Driver
@@ -43,13 +42,11 @@ jobs:
           auto_update_database=true
           create_tables=true
       
-          # Отключаем демо-данные (если content-пакет всё же пытается их грузить)
+          # Отключаем демо-данные 
           add_demo_data=false
           initializer.batch.size=100
           module.allow_web_admin=true
-      
-          # Дополнительные флаги на всякий случай
-          referencedemodata.enabled=false
+
           EOF
       
           # Показываем, что создали (для отладки в логах CI)
@@ -68,9 +65,9 @@ jobs:
       
           # Ждём, пока OpenMRS полностью запустится и API станет доступным
           # Проверяем REST endpoint systeminformation (требует admin:Admin123 по умолчанию)
-          echo "Ожидаем готовности OpenMRS (максимум 120 секунд)..."
-          timeout 120 sh -c 'until curl -s -f -u admin:Admin123 http://localhost:8080/openmrs/ws/rest/v1/systeminformation >/dev/null; do echo "Ещё ждём..."; sleep 5; done' || {
-          echo "Ошибка: OpenMRS не запустился за 120 секунд"
+          echo "Ожидаем готовности OpenMRS (максимум 20 минут)..."
+          timeout 1200 sh -c 'until curl -s -f -u admin:Admin123 http://localhost/openmrs/ws/rest/v1/systeminformation >/dev/null; do echo "Ещё ждём OpenMRS..."; sleep 10; done' || {
+          echo "Ошибка: OpenMRS не запустился за 20 минут"
           docker compose logs backend
           exit 1
           }
