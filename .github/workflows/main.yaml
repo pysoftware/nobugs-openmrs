@@ -32,6 +32,8 @@ jobs:
           # Создаём директорию для данных (чтобы volume её подхватил)
           mkdir -p openmrs-data
 
+          # Создаём файл конфигурации с отключением demo-данных
+          cat > openmrs-data/openmrs-runtime.properties << 'EOF'
           # Основные настройки подключения к БД
           connection.url=jdbc:mysql://db:3306/openmrs?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
           connection.driver_class=com.mysql.cj.jdbc.Driver
@@ -44,6 +46,7 @@ jobs:
 
           # Разрешаем веб-админку модулей
           module.allow_web_admin=true
+
 
           EOF
 
