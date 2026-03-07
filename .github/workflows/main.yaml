@@ -25,55 +25,28 @@ jobs:
 
       - name: Clone and start OpenMRS Reference Application
         run: |
-          # Клонируем официальный репозиторий
-          git clone https://github.com/openmrs/openmrs-distro-referenceapplication.git refapp
-          cd refapp
+          # Клонируем современный дистрибутив 3.x (refapp уже устарел)
+          git clone --depth 1 https://github.com/openmrs/openmrs-distro-platform.git o3-distro
+          cd o3-distro
 
-          # Создаём директорию для данных (чтобы volume её подхватил)
-          mkdir -p openmrs-data
+          # Или используй готовый docker-compose от сообщества, например:
+          # https://github.com/openmrs/openmrs-core/tree/master/docker (но лучше distro)
 
-          # Создаём файл конфигурации с отключением demo-данных
-          cat > openmrs-data/openmrs-runtime.properties << 'EOF'
-          # Основные настройки подключения к БД
-          connection.url=jdbc:mysql://db:3306/openmrs?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-          connection.driver_class=com.mysql.cj.jdbc.Driver
-          connection.username=openmrs
-          connection.password=openmrs
+          # Здесь обычно docker compose up -d
+          # Но проще — использовать готовый образ или скрипт от openmrs-contrib
 
-          # Автоматическое создание и обновление БД
-          auto_update_database=true
-          create_tables=true
+          # Альтернатива — docker pull openmrs/openmrs-reference-application-3x (но его пока нет стабильного)
 
-          # КРИТИЧНО: отключаем генерацию демо-данных, чтобы избежать ошибки в ReferenceDemoDataActivator
-          add_demo_data=false
+          # Самый быстрый старт — docker-compose от openmrs-core + добавляем SPA
+          wget https://raw.githubusercontent.com/openmrs/openmrs-core/master/docker/docker-compose.yml
+          # потом sed или вручную подменяем образы/настройки
 
-          # Дополнительные флаги отключения demo-генерации (на всякий случай)
-          referencedemodata.enabled=false
-          referencedemodata.createDemoPatientsOnNextStartup=0
-          referencedemodata.createDemoVisitsOnNextStartup=0
-          referencedemodata.createDemoEncountersOnNextStartup=0
-          referencedemodata.createDemoObsOnNextStartup=0
-
-          # Разрешаем веб-админку модулей
-          module.allow_web_admin=true
-
-          # Можно добавить другие настройки, если нужно
-          # Например: admin_password=Admin123 (но по умолчанию уже Admin123)
-          EOF
-
-          # Debug: показываем содержимое файла (чтобы убедиться, что он создался)
-          echo "Содержимое openmrs-runtime.properties:"
-          cat openmrs-data/openmrs-runtime.properties
-          echo "-------------------------------------"
-
-          # Pull образов заранее (ускоряет запуск)
-          docker compose pull --quiet || true
-
-          # Запускаем стек
+          # Запускаем
+          docker compose pull
           docker compose up -d
 
-          # Debug: проверяем, что контейнеры запустились
-          docker compose ps
+          # Ждём готовности (очень важно!)
+          timeout 120 sh -c 'until curl -s -f -u admin:Admin123 http://localhost:8080/openmrs/ws/rest/v1/systeminformation > /dev/null; do sleep 5; done'
 
 
       # ────────────────────────────────────────────────
@@ -107,7 +80,9 @@ jobs:
       - name: Run Swagger Coverage
         continue-on-error: true
         if: ${{ inputs.package == 'api' }}
-        run: .swagger-coverage-commandline/bin/swagger-coverage-commandline -s http://$HOST:8111/app/rest/swagger.json -i target/swagger-coverage-output
+        run: .swagger-coverage-commandline/bin/swagger-coverage-commandline -s https://o3.openmrs.org/openmrs/module/webservices/rest/swagger.json \
+          -i target/swagger-coverage-output \
+          --auth-basic admin:Admin123
 
       # Сохраняем Swagger Report в артефакты GitHub Actions
       - name: Save Swagger Coverage
