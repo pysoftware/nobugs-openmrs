@@ -30,7 +30,6 @@ jobs:
       
           mkdir -p openmrs-data
       
-          # Минимальный конфиг — отключаем демо где возможно
           cat > openmrs-data/openmrs-runtime.properties << 'EOL'
           connection.url=jdbc:mysql://db:3306/openmrs?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
           connection.username=openmrs
@@ -64,6 +63,7 @@ jobs:
       
           echo "OpenMRS 3.x успешно инициализирован!"
 
+
       # ────────────────────────────────────────────────
       # Java + Maven для обоих типов тестов
       # ────────────────────────────────────────────────
@@ -81,57 +81,56 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Run tests # Запуск тестов с Maven
-        run: ./mvn clean test
-#
-#      # Запуск тестов с фильтром по пакету
-#      - name: Run tests (${{ inputs.package }})
-#        env:
-#          # Передаём baseUrl через environment variable
-#          # Твой код в PlaywrightConfiguration.loadFromProperties() берёт из properties,
-#          # но проще и надёжнее передать через -D или env → адаптируй Config.getProperty()
-#          UI_BASE_URL: "http://localhost/openmrs/spa"
-#          # Если headless управляется через properties → можно добавить:
-#          HEADLESS: "true"
-#          # или другие: BROWSER=chrome, etc.
-#        run: |
-#          # Для api: только api-пакет
-#          # Для ui: только ui-пакет
-#          if [ "${{ inputs.package }}" = "api" ]; then
-#            mvn clean test -Dtest=api.** -DfailIfNoTests=false
-#          else
-#            mvn clean test -Dtest=ui.** -DfailIfNoTests=false
-#          fi
-#
-#      # Swagger Coverage — только для API
-#      - name: Generate Swagger Coverage (API only)
-#        if: ${{ inputs.package == 'api' }}
-#        continue-on-error: true
-#        run: |
-#          curl -L https://github.com/viclovsky/swagger-coverage/releases/latest/download/swagger-coverage-commandline.zip -o sc.zip
-#          unzip sc.zip
-#          chmod +x swagger-coverage-commandline/bin/swagger-coverage-commandline
-#          ./swagger-coverage-commandline/bin/swagger-coverage-commandline \
-#            -s http://localhost/openmrs/ws/rest/v1/swagger.json \
-#            -i target/swagger-coverage-output || true
-#
-#      - name: Upload Swagger Coverage (API)
-#        if: ${{ inputs.package == 'api' }}
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: swagger-coverage
-#          path: target/swagger-coverage-output/
-#          if-no-files-found: warn
-#
-#      # Артефакты для всех (JUnit XML + любые html-отчёты)
-#      - name: Upload test results
-#        if: always()
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: test-results-${{ inputs.package }}
-#          path: |
-#            target/surefire-reports/
-#            target/*.html
-#            target/swagger-coverage-output/
-#          if-no-files-found: warn
-#          retention-days: 7
+      - name: Run tests
+        continue-on-error: true
+        run: |
+          chmod +x mvnw
+          echo "Список файлов wrapper:"
+          ls -la mvnw .mvn/wrapper/ || echo "mvnw или wrapper не найдены"
+          echo "Версия Maven от wrapper:"
+          ./mvnw --version
+          echo "Запуск тестов..."
+          ./mvnw clean test
+
+      - name: Run Swagger Coverage
+        continue-on-error: true
+        if: ${{ inputs.package == 'api' }}
+        run: .swagger-coverage-commandline/bin/swagger-coverage-commandline -s https://o3.openmrs.org/openmrs/module/webservices/rest/swagger.json \
+          -i target/swagger-coverage-output \
+          --auth-basic admin:Admin123
+
+      # Сохраняем Swagger Report в артефакты GitHub Actions
+      - name: Save Swagger Coverage
+        uses: actions/upload-artifact@v4
+        if: ${{ inputs.package == 'api' }}
+        with:
+          name: swagger-coverage
+          path: |
+            swagger-coverage-report.html
+            swagger-coverage-results.json
+      # Загружаем историю Allure Report с специальной ветки gh-pages (https://allurereport.org/docs/integrations-github/)
+      - name: Load test report history
+        uses: actions/checkout@v2
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Build test report
+        uses: simple-elf/allure-report-action@v1.13
+        if: always()
+        with:
+          gh_pages: gh-pages
+          allure_history: allure-history
+          allure_results: target/allure-results
+          subfolder: ${{ inputs.package }}
+
+      # Создаем пустую ветку gh-pages на основе инструкции https://gist.github.com/ramnathv/2227408
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@v3
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
