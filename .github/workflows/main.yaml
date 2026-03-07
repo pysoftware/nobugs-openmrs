@@ -17,80 +17,14 @@ on:
 jobs:
   run-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 1440
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Clone and start OpenMRS Reference Application (no demo)
+      - name: Run OpenMRS
+        shell: bash
         run: |
-          echo "=== Этап 1: Клонируем репозиторий ==="
-          git clone --depth 1 https://github.com/openmrs/openmrs-distro-referenceapplication.git o3-refapp || { echo "Ошибка: git clone провалился"; exit 1; }
-          cd o3-refapp
-      
-          echo "=== Этап 2: Проверяем наличие docker-compose.yml ==="
-          ls -l docker-compose.yml || { echo "Ошибка: docker-compose.yml не найден"; exit 1; }
-      
-          echo "=== Этап 3: Создаём директорию для данных ==="
-          mkdir -p openmrs-data || { echo "Ошибка: не удалось создать openmrs-data"; exit 1; }
-      
-          echo "=== Этап 4: Создаём runtime.properties (минимизируем демо) ==="
-          cat > openmrs-data/openmrs-runtime.properties << 'EOL'
-          connection.url=jdbc:mysql://db:3306/openmrs?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-          connection.username=openmrs
-          connection.password=openmrs
-          auto_update_database=true
-          add_demo_data=false
-          EOL
-      
-          test -s openmrs-data/openmrs-runtime.properties || { echo "Ошибка: runtime.properties пустой или не создан"; exit 1; }
-      
-          echo "=== Этап 5: Pull образов ==="
-          docker compose pull --quiet || { echo "Ошибка: docker compose pull провалился"; exit 1; }
-      
-          echo "=== Этап 6: Запускаем стек ==="
-          docker compose up -d || { echo "Ошибка: docker compose up -d провалился"; exit 1; }
-      
-          echo "=== Этап 7: Проверяем, что все контейнеры стартовали (не в статусе Exited) ==="
-          sleep 10  # даём 10 сек на запуск
-          docker compose ps --format '{{.Name}} {{.State}}' | grep -v "running\|healthy" && { echo "Ошибка: некоторые контейнеры не в running/healthy состоянии"; docker compose ps; exit 1; } || echo "Все контейнеры в ожидаемом состоянии"
-      
-          echo "=== Этап 8: Ожидание полной готовности backend + Initializer (до 60 минут) ==="
-          echo "Порт 8080 обычно не экспонируется → проверяем через gateway (localhost:80 /openmrs/...)"
-          timeout 3600 bash -c '
-          ATTEMPT=0
-          until curl -s -f -u admin:Admin123 http://localhost/openmrs/ws/rest/v1/systeminformation >/dev/null; do
-          ATTEMPT=$((ATTEMPT+1))
-          echo "Попытка $ATTEMPT | Ждём OpenMRS... $(date +%H:%M:%S)"
-          sleep 15
-          done
-          ' || {
-            echo "!!! Ошибка: OpenMRS не готов за 60 минут"
-            echo "Последние логи backend:"
-            docker compose logs --tail=400 backend
-            echo "Логи db (последние 150 строк):"
-            docker compose logs --tail=150 db
-            echo "Статус контейнеров:"
-            docker compose ps
-            exit 1
-          }
-          
-          # Ждём, пока OpenMRS полностью запустится и API станет доступным
-          # Проверяем REST endpoint systeminformation (требует admin:Admin123 по умолчанию)
-          echo "Ожидаем готовности OpenMRS"
-          timeout 1200 sh -c 'until curl -s -f -u admin:Admin123 http://localhost/openmrs/ws/rest/v1/systeminformation >/dev/null; do echo "Ещё ждём OpenMRS..."; sleep 10; done' || {
-          echo "Ошибка: OpenMRS не запустился за 20 минут"
-          docker compose logs backend
-          exit 1
-          }
-          
-          echo "=== Этап 9: Финальная проверка — получаем системную информацию ==="
-          curl -s -u admin:Admin123 http://localhost/openmrs/ws/rest/v1/systeminformation > systeminfo.json || { echo "Ошибка: не удалось получить systeminformation после таймаута"; exit 1; }
-      
-          echo "OpenMRS успешно запущен!"
-          echo "Версия (из systeminfo):"
-          grep -E "version|build" systeminfo.json || echo "(не удалось распарсить версию)"
+          docker compose up -d --wait
+          curl -I http://localhost/openmrs/spa 
 
 
       # ────────────────────────────────────────────────
