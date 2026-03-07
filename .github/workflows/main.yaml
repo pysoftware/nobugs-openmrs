@@ -23,15 +23,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Start OpenMRS
+      - name: Clone and start OpenMRS Reference Application
         run: |
-          # Pull образов заранее (ускоряет)
+          # Клонируем официальный репозиторий
+          git clone https://github.com/openmrs/openmrs-distro-referenceapplication.git refapp
+          cd refapp
+
+          # Создаём директорию для данных (чтобы volume её подхватил)
+          mkdir -p openmrs-data
+
+          # Автоматическое создание и обновление БД
+          auto_update_database=true
+          create_tables=true
+
+          # Разрешаем веб-админку модулей
+          module.allow_web_admin=true
+
+          EOF
+
+          # Debug: показываем содержимое файла (чтобы убедиться, что он создался)
+          echo "Содержимое openmrs-runtime.properties:"
+          cat openmrs-data/openmrs-runtime.properties
+          echo "-------------------------------------"
+
+          # Pull образов заранее (ускоряет запуск)
           docker compose pull --quiet || true
 
           # Запускаем стек
           docker compose up -d
 
-          # Debug: статус контейнеров
+          # Debug: проверяем, что контейнеры запустились
           docker compose ps
 
       - name: Wait for OpenMRS to be fully ready
