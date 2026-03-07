@@ -25,28 +25,61 @@ jobs:
 
       - name: Clone and start OpenMRS Reference Application
         run: |
-          # Клонируем современный дистрибутив 3.x (refapp уже устарел)
-          git clone --depth 1 https://github.com/openmrs/openmrs-distro-platform.git o3-distro
+          # Клонируем актуальный дистрибутив OpenMRS 3.x (Reference Application O3)
+          git clone --depth 1 https://github.com/openmrs/openmrs-distro-referenceapplication.git o3-distro
           cd o3-distro
-
-          # Или используй готовый docker-compose от сообщества, например:
-          # https://github.com/openmrs/openmrs-core/tree/master/docker (но лучше distro)
-
-          # Здесь обычно docker compose up -d
-          # Но проще — использовать готовый образ или скрипт от openmrs-contrib
-
-          # Альтернатива — docker pull openmrs/openmrs-reference-application-3x (но его пока нет стабильного)
-
-          # Самый быстрый старт — docker-compose от openmrs-core + добавляем SPA
-          wget https://raw.githubusercontent.com/openmrs/openmrs-core/master/docker/docker-compose.yml
-          # потом sed или вручную подменяем образы/настройки
-
-          # Запускаем
-          docker compose pull
+      
+          # Создаём директорию для персистентных данных (важно для volume)
+          mkdir -p openmrs-data
+      
+          # Создаём конфиг, чтобы максимально отключить демо-данные (на всякий случай)
+          # В новых версиях демо часто уже не грузится по умолчанию, но лучше перестраховаться
+          cat > openmrs-data/openmrs-runtime.properties << 'EOF'
+          connection.url=jdbc:mysql://db:3306/openmrs?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+          connection.driver_class=com.mysql.cj.jdbc.Driver
+          connection.username=openmrs
+          connection.password=openmrs
+      
+          auto_update_database=true
+          create_tables=true
+      
+          # Отключаем демо-данные (если content-пакет всё же пытается их грузить)
+          add_demo_data=false
+          initializer.batch.size=100
+          module.allow_web_admin=true
+      
+          # Дополнительные флаги на всякий случай
+          referencedemodata.enabled=false
+          EOF
+      
+          # Показываем, что создали (для отладки в логах CI)
+          echo "=== openmrs-runtime.properties ==="
+          cat openmrs-data/openmrs-runtime.properties
+          echo "================================="
+      
+          # Подтягиваем готовые образы (backend, frontend, gateway, db и т.д.)
+          docker compose pull --quiet || true
+      
+          # Запускаем весь стек в фоне
           docker compose up -d
+      
+          # Показываем статус контейнеров сразу после запуска
+          docker compose ps
+      
+          # Ждём, пока OpenMRS полностью запустится и API станет доступным
+          # Проверяем REST endpoint systeminformation (требует admin:Admin123 по умолчанию)
+          echo "Ожидаем готовности OpenMRS (максимум 120 секунд)..."
+          timeout 120 sh -c 'until curl -s -f -u admin:Admin123 http://localhost:8080/openmrs/ws/rest/v1/systeminformation >/dev/null; do echo "Ещё ждём..."; sleep 5; done' || {
+          echo "Ошибка: OpenMRS не запустился за 120 секунд"
+          docker compose logs backend
+          exit 1
+          }
 
-          # Ждём готовности (очень важно!)
-          timeout 120 sh -c 'until curl -s -f -u admin:Admin123 http://localhost:8080/openmrs/ws/rest/v1/systeminformation > /dev/null; do sleep 5; done'
+          echo "OpenMRS 3.x запущен!"
+          echo "Доступ:"
+          echo "  → Frontend (O3 SPA):     http://localhost/openmrs/spa"
+          echo "  → Legacy UI (если нужно): http://localhost/openmrs"
+          echo "Логин по умолчанию: admin / Admin123"
 
 
       # ────────────────────────────────────────────────
