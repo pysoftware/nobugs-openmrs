@@ -25,84 +25,44 @@ jobs:
 
       - name: Clone and start OpenMRS Reference Application (no demo)
         run: |
-          git clone https://github.com/openmrs/openmrs-distro-referenceapplication.git refapp
-          cd refapp
-
+          git clone --depth 1 https://github.com/openmrs/openmrs-distro-referenceapplication.git o3-refapp
+          cd o3-refapp
+      
           mkdir -p openmrs-data
-
-          # Копируем готовый no-demo вариант вместо дефолтного
-          cp distro/distro-no-demo.properties distro/distro.properties
-
-          # (опционально) всё равно кладём runtime с правильной БД
-          cat > openmrs-data/openmrs-runtime.properties << 'EOF'
+      
+          # Минимальный конфиг — отключаем демо где возможно
+          cat > openmrs-data/openmrs-runtime.properties << 'EOL'
           connection.url=jdbc:mysql://db:3306/openmrs?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-          connection.driver_class=com.mysql.cj.jdbc.Driver
           connection.username=openmrs
           connection.password=openmrs
           auto_update_database=true
-          create_tables=true
-          module.allow_web_admin=true
-          EOF
-
+          add_demo_data=false
+          EOL
+      
           docker compose pull --quiet || true
           docker compose up -d
+      
+          echo "Контейнеры:"
           docker compose ps
-
-      - name: Wait for OpenMRS to be fully ready
-        run: |
+      
+          echo "Ожидание полной инициализации (до 60 минут)..."
           timeout 3600 bash -c '
-          set -euo pipefail
-          
-          echo "→ Waiting for basic backend..."
-          until curl -s -f -o /dev/null http://localhost/openmrs; do
-           echo "  Backend not responding... $(date +%H:%M:%S)"
-           sleep 5
+          until curl -s -f -u admin:Admin123 http://localhost/openmrs/ws/rest/v1/systeminformation >/dev/null; do
+          echo "Ждём OpenMRS... $(date +%H:%M:%S)"
+          sleep 15
           done
-          echo "→ Backend OK"
-          
-          echo "→ Waiting for SPA root..."
-          until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
-           echo "  SPA root not responding... $(date +%H:%M:%S)"
-           sleep 5
-          done
-          echo "→ SPA root OK"
-          
-          echo "→ Waiting for session..."
-          until curl -s -f http://localhost/openmrs/ws/rest/v1/session | grep -q "\"authenticated\""; do
-           echo "  Session not ready... $(date +%H:%M:%S)"
-           sleep 8
-          done
-          echo "→ Session OK"
-          
-          echo "→ Final check: successful admin login..."
-          until curl -s -X POST -d "username=admin&password=Admin123" http://localhost/openmrs/ws/rest/v1/session | grep -q '"authenticated":true'; do
-           echo "  Admin login not succeeding yet... $(date +%H:%M:%S)"
-           sleep 10
-          done
-          echo "→ Admin login successful → OpenMRS fully ready for tests!"
           ' || {
-          echo "Timeout after 60 minutes — OpenMRS did not fully initialize"
-          docker compose ps
-          docker compose logs backend | tail -n 300
-          exit 1
+            echo "!!! TIMEOUT — OpenMRS не готов за 60 минут"
+            echo "Логи backend (последние 400 строк):"
+            docker compose logs --tail=400 backend
+            echo "Логи db:"
+            docker compose logs --tail=100 db
+            echo "Логи gateway:"
+            docker compose logs --tail=100 gateway
+            exit 1
           }
       
-          echo "OpenMRS ready for tests!"
-            
-
-#      - name: Wait for OpenMRS to be ready
-#        run: |
-#          timeout 900s bash -c '
-#            until curl -s -f -o /dev/null http://localhost/openmrs; do
-#              echo "Waiting backend... $(date +%H:%M:%S)"
-#              sleep 5
-#            done
-#            until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
-#              echo "Waiting SPA... $(date +%H:%M:%S)"
-#              sleep 5
-#            done
-#          ' || { echo "Timeout"; docker compose -f refapp/docker-compose.yml ps; exit 1; }
-#          echo "OpenMRS ready"
+          echo "OpenMRS 3.x успешно инициализирован!"
 
       # ────────────────────────────────────────────────
       # Java + Maven для обоих типов тестов
