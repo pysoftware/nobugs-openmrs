@@ -93,25 +93,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Prepare Maven Wrapper
+      - name: Run tests
         run: |
-          if [ -f mvnw ]; then
-            chmod +x mvnw
-            echo "mvnw exists and made executable"
-          else
-            echo "ERROR: mvnw file not found in repo!"
-            exit 1
-          fi
-          
-          ./mvnw --version || echo "Wrapper failed to run --version"
-
-      - name: Run tests # Запуск тестов с Maven
-        run:
+          # 1. Делаем mvnw исполняемым
           chmod +x mvnw
-          ls -la mvnw .mvn/wrapper/
+          
+          # 2. Debug: проверяем наличие и права
+          echo "Список файлов wrapper:"
+          ls -la mvnw .mvn/wrapper/ || echo "mvnw или wrapper не найдены"
+          
+          # 3. Проверяем версию Maven (wrapper скачает, если нужно)
+          echo "Версия Maven от wrapper:"
           ./mvnw --version
+          
+          # 4. Запуск тестов
+          echo "Запуск тестов..."
           ./mvnw clean test
-#
+    #
 #      # Запуск тестов с фильтром по пакету
 #      - name: Run tests (${{ inputs.package }})
 #        env:
