@@ -95,8 +95,8 @@ jobs:
 
       - name: Run tests # Запуск тестов с Maven
         run:
-          ls -la mvnw .mvn/wrapper/ || echo "mvnw or wrapper not found"
           chmod +x mvnw
+          ls -la mvnw .mvn/wrapper/
           ./mvnw --version
           ./mvnw clean test
 #
