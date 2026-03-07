@@ -23,36 +23,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Clone and start OpenMRS Reference Application
+      - name: Clone and start OpenMRS Reference Application (no demo)
         run: |
-          # Клонируем официальный репозиторий
           git clone https://github.com/openmrs/openmrs-distro-referenceapplication.git refapp
           cd refapp
 
-          # Создаём директорию для данных (чтобы volume её подхватил)
           mkdir -p openmrs-data
 
-          # Автоматическое создание и обновление БД
+          # Копируем готовый no-demo вариант вместо дефолтного
+          cp distro/distro-no-demo.properties distro/distro.properties
+
+          # (опционально) всё равно кладём runtime с правильной БД
+          cat > openmrs-data/openmrs-runtime.properties << 'EOF'
+          connection.url=jdbc:mysql://db:3306/openmrs?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+          connection.driver_class=com.mysql.cj.jdbc.Driver
+          connection.username=openmrs
+          connection.password=openmrs
           auto_update_database=true
           create_tables=true
-
-          # Разрешаем веб-админку модулей
           module.allow_web_admin=true
-
           EOF
 
-          # Debug: показываем содержимое файла (чтобы убедиться, что он создался)
-          echo "Содержимое openmrs-runtime.properties:"
-          cat openmrs-data/openmrs-runtime.properties
-          echo "-------------------------------------"
-
-          # Pull образов заранее (ускоряет запуск)
           docker compose pull --quiet || true
-
-          # Запускаем стек
           docker compose up -d
-
-          # Debug: проверяем, что контейнеры запустились
           docker compose ps
 
       - name: Wait for OpenMRS to be fully ready
