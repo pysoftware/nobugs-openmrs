@@ -20,11 +20,28 @@ jobs:
     timeout-minutes: 1440
 
     steps:
-      - name: Run OpenMRS
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Clone and start OpenMRS Reference Application (no demo)
         shell: bash
+        working-directory: ${{ github.workspace }}
         run: |
-          docker compose up -d --wait
-          curl -I http://localhost/openmrs/spa 
+          echo "Current directory:"
+          pwd
+          echo "Files in root:"
+          ls -la | grep -i compose
+          if [ -f docker-compose.yml ]; then
+            echo "File found!"
+            docker compose -f docker-compose.yml config   # ← проверит синтаксис
+            docker compose -f docker-compose.yml up -d --wait
+            sleep 10   # дать время на запуск
+            curl -v -I http://localhost/openmrs/spa
+          else
+            echo "ERROR: docker-compose.yml NOT found in current dir!"
+            exit 1
+          fi
+
 
 
       # ────────────────────────────────────────────────
