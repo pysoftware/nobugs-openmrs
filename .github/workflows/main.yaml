@@ -101,6 +101,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Install Playwright browsers
+        run: |
+          ./mvnw dependency:go-offline
+          # Запускаем CLI из зависимости
+          java -cp "$(./mvnw dependency:build-classpath -q -Dmdep.outputFile=cp.txt && cat cp.txt)" \
+            com.microsoft.playwright.CLI install --with-deps chromium
+
       - name: Run tests
         continue-on-error: true
         run: |
