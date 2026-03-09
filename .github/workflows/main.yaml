@@ -33,15 +33,15 @@ jobs:
             
             docker compose -f docker-compose-no-volumes.yml ps
           
-          echo "Ожидаем готовности OpenMRS (без жёсткого лимита времени)..."
-          echo "Проверяем каждые 10 сек, пока /session не вернёт authenticated: true"
+            echo "Ожидаем готовности OpenMRS (без жёсткого лимита времени)..."
+            echo "Проверяем каждые 10 сек, пока /session не вернёт authenticated: true"
             
             until curl -s -f -u admin:Admin123 http://localhost/openmrs/ws/rest/v1/session | grep -q '"authenticated":true'; do
             echo "Ещё ждём OpenMRS... $(date '+%H:%M:%S')"
             sleep 10
             done
           
-          echo "OpenMRS готов! /session возвращает JSON с authenticated: true"
+            echo "OpenMRS готов! /session возвращает JSON с authenticated: true"
 
       - name: Show backend & db logs on failure
         if: failure()
