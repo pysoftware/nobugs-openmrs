@@ -22,60 +22,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Clone and start OpenMRS Reference Application
+      - name: Clone and start OpenMRS Reference Application (no volumes)
         run: |
-          # Клонируем актуальный дистрибутив OpenMRS 3.x (Reference Application O3)
-          git clone --depth 1 https://github.com/openmrs/openmrs-distro-referenceapplication.git o3-distro
-          cd o3-distro
-      
-          # Создаём директорию для персистентных данных (важно для volume)
-          mkdir -p openmrs-data
-      
-          # Создаём конфиг, чтобы максимально отключить демо-данные 
-          cat > openmrs-data/openmrs-runtime.properties << 'EOF'
-          connection.url=jdbc:mysql://db:3306/openmrs?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-          connection.driver_class=com.mysql.cj.jdbc.Driver
-          connection.username=openmrs
-          connection.password=openmrs
-      
-          auto_update_database=true
-          create_tables=true
-      
-          # Отключаем демо-данные 
-          add_demo_data=false
-          initializer.batch.size=100
-          module.allow_web_admin=true
+            git clone --depth 1 https://github.com/openmrs/openmrs-distro-referenceapplication.git o3-distro
+            cd o3-distro
+            
+            # Используем вариант без volume (быстрее и чище в CI)
+            docker compose -f docker-compose-no-volumes.yml pull --quiet || true
+            docker compose -f docker-compose-no-volumes.yml up -d
+            
+            docker compose -f docker-compose-no-volumes.yml ps
+            
+            echo "Ожидаем готовности OpenMRS (максимум 15 мин)..."
+            timeout 900 sh -c 'until curl -s -f -u admin:Admin123 http://localhost/openmrs/ws/rest/v1/session | grep -q "authenticated"; do
+              echo "Ждём JSON от /session..."
+              sleep 10
+            done' || {
+              echo "Ошибка запуска — показываем логи backend"
+              docker compose -f docker-compose-no-volumes.yml logs backend
+              exit 1
+            }
+            
+            echo "OpenMRS готов! Session endpoint возвращает JSON."
 
-          EOF
-      
-          # Показываем, что создали (для отладки в логах CI)
-          echo "=== openmrs-runtime.properties ==="
-          cat openmrs-data/openmrs-runtime.properties
-          echo "================================="
-      
-          # Подтягиваем готовые образы (backend, frontend, gateway, db и т.д.)
-          docker compose pull --quiet || true
-      
-          # Запускаем весь стек в фоне
-          docker compose up -d
-      
-          # Показываем статус контейнеров сразу после запуска
-          docker compose ps
-      
-          # Ждём, пока OpenMRS полностью запустится и API станет доступным
-          # Проверяем REST endpoint systeminformation (требует admin:Admin123 по умолчанию)
-          echo "Ожидаем готовности OpenMRS (максимум 20 минут)..."
-          timeout 1200 sh -c 'until curl -s -f -u admin:Admin123 http://localhost/openmrs/ws/rest/v1/systeminformation >/dev/null; do echo "Ещё ждём OpenMRS..."; sleep 10; done' || {
-          echo "Ошибка: OpenMRS не запустился за 20 минут"
+      - name: Show backend & db logs on failure
+        if: failure()
+        run: |
           docker compose logs backend
-          exit 1
-          }
-
-          echo "OpenMRS 3.x запущен!"
-          echo "Доступ:"
-          echo "  → Frontend (O3 SPA):     http://localhost/openmrs/spa"
-          echo "  → Legacy UI (если нужно): http://localhost/openmrs"
-          echo "Логин по умолчанию: admin / Admin123"
+          docker compose logs db
 
 
       # ────────────────────────────────────────────────
