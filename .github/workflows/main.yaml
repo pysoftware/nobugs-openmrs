@@ -30,9 +30,7 @@ jobs:
 
       - name: Wait for OpenMRS to be fully ready
         run: |
-          timeout 3600 bash -c '
-          set -euo pipefail
-          
+
           echo "→ Waiting for basic backend..."
           until curl -s -f -o /dev/null http://localhost/openmrs; do
            echo "  Backend not responding... $(date +%H:%M:%S)"
