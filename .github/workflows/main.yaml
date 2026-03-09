@@ -28,54 +28,18 @@ jobs:
           docker compose up -d --wait
           curl -I http://localhost/openmrs/spa
 
-      - name: Wait for OpenMRS to be fully ready
-        run: |
 
-          echo "→ Waiting for basic backend..."
-          until curl -s -f -o /dev/null http://localhost/openmrs; do
-           echo "  Backend not responding... $(date +%H:%M:%S)"
-           sleep 5
-          done
-          echo "→ Backend OK"
-          
-          echo "→ Waiting for SPA root..."
-          until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
-           echo "  SPA root not responding... $(date +%H:%M:%S)"
-           sleep 5
-          done
-          echo "→ SPA root OK"
-          
-          echo "→ Waiting for session..."
-          until curl -s -f http://localhost/openmrs/ws/rest/v1/session | grep -q "\"authenticated\""; do
-           echo "  Session not ready... $(date +%H:%M:%S)"
-           sleep 8
-          done
-          echo "→ Session OK"
-          
-               
-          # Финальная проверка — попытка логина (очень надёжный маркер)
-          echo "→ Final check: login as admin..."
-          SESSION=$(curl -s -X POST -d "username=admin&password=Admin123" http://localhost/openmrs/ws/rest/v1/session | jq -r .sessionId)
-          if [ -z "$SESSION" ] || [ "$SESSION" = "null" ]; then
-           echo "Login failed!"
-           exit 1
-          fi
-          echo "→ Login OK (sessionId получен) → OpenMRS ready for tests!"
-          docker compose -f refapp/docker-compose.yml ps
-          docker compose -f refapp/docker-compose.yml logs backend | tail -n 300
-      #      - name: Wait for OpenMRS to be ready
-      #        run: |
-      #          timeout 900s bash -c '
-      #            until curl -s -f -o /dev/null http://localhost/openmrs; do
-      #              echo "Waiting backend... $(date +%H:%M:%S)"
-      #              sleep 5
-      #            done
-      #            until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
-      #              echo "Waiting SPA... $(date +%H:%M:%S)"
-      #              sleep 5
-      #            done
-      #          ' || { echo "Timeout"; docker compose -f refapp/docker-compose.yml ps; exit 1; }
-      #          echo "OpenMRS ready"
+            - name: Wait for OpenMRS to be ready
+              run: |
+                  until curl -s -f -o /dev/null http://localhost/openmrs; do
+                    echo "Waiting backend... $(date +%H:%M:%S)"
+                    sleep 5
+                  done
+                  until curl -s -f -o /dev/null http://localhost/openmrs/spa; do
+                    echo "Waiting SPA... $(date +%H:%M:%S)"
+                    sleep 5
+                  done
+                echo "OpenMRS ready"
 
       # ────────────────────────────────────────────────
       # Java + Maven для обоих типов тестов
