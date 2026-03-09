@@ -52,14 +52,7 @@ jobs:
           done
           echo "→ Session OK"
           
-          echo "→ Ждём завершения старта OpenMRS в логах..."
-          until docker compose -f refapp/docker-compose.yml logs backend | grep -q "OpenMRS started successfully" || \
-          docker compose -f refapp/docker-compose.yml logs backend | grep -q "Started OpenMRS in"; do
-          echo "  Ещё не видно 'OpenMRS started successfully'... $(date +%H:%M:%S)"
-          sleep 10
-          done
-          echo "→ Найдена строка успешного старта → считаем, что миграции и загрузка завершены"
-          
+               
           # Финальная проверка — попытка логина (очень надёжный маркер)
           echo "→ Final check: login as admin..."
           SESSION=$(curl -s -X POST -d "username=admin&password=Admin123" http://localhost/openmrs/ws/rest/v1/session | jq -r .sessionId)
