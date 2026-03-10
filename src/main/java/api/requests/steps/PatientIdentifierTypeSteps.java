@@ -12,7 +12,19 @@ import api.specs.RequestSpec;
 import api.specs.ResponseSpec;
 import io.restassured.response.ValidatableResponse;
 
+import java.util.List;
+import java.util.Map;
+
 public class PatientIdentifierTypeSteps {
+    public static List<PatientIdentifierTypeResponse> getPatientIdentifierTypeList() {
+        var params = Map.<String, Object>of("v", "default");
+        return new ValidatedCrudRequester<PatientIdentifierTypeResponse>(
+                RequestSpec.adminSpec(),
+                Endpoint.PATIENT_IDENTIFIER_TYPE,
+                ResponseSpec.requestReturnsOk()
+        ).getAll(PatientIdentifierTypeResponse.class, params);
+    }
+
     public static PatientIdentifierTypeResponse createPatientIdentifierType() {
         PatientIdentifierTypeCreateRequest identifierTypeCreateRequest =
                 RandomModelGenerator.generate(PatientIdentifierTypeCreateRequest.class,
