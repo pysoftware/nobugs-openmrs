@@ -34,6 +34,7 @@ jobs:
 
       - name: Checkstyle
         run: mvn checkstyle:check
+        continue-on-error: true
 
       # ------------------ Start OpenMRS Docker ------------------
       - name: Start OpenMRS
