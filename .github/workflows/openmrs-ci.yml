@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - ci_cd
   pull_request:
   workflow_dispatch:
 
@@ -42,7 +43,7 @@ jobs:
       - name: Wait for OpenMRS
         run: |
           for i in {1..60}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/openmrs/spa/login.htm || true)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/openmrs/login.htm || true)
             if [ "$STATUS" = "200" ]; then
               echo "OpenMRS started"
               exit 0
@@ -67,7 +68,7 @@ jobs:
       - name: Swagger API coverage
         run: |
           pip install schemathesis
-          schemathesis run http://localhost:8080/openmrs/module/webservices/rest/swagger.json
+          schemathesis run http://localhost:8080/openmrs/swagger.json
 
       # ------------------ UI Tests ------------------
       - name: Setup Node
@@ -96,23 +97,14 @@ jobs:
           path: playwright-report
 
       # ------------------ Allure Report ------------------
-      - name: Upload Allure results
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results
-          path: allure-results
-
-      - name: Generate Allure report
-        uses: simple-elf/allure-report-action@v1
-        with:
-          allure_results: allure-results
-          allure_report: allure-report
+      - name: Generate Allure report via Maven
+        run: mvn allure:report
 
       - name: Upload Allure report
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
-          path: allure-report
+          path: target/site/allure-maven-plugin
 
       # ------------------ Logs ------------------
       - name: Collect logs
