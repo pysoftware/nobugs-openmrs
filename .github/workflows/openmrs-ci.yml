@@ -36,28 +36,67 @@ jobs:
         run: mvn checkstyle:check
         continue-on-error: true
 
-      # ------------------ Start OpenMRS Docker ------------------
-      - name: Start OpenMRS
+      # ------------------ Pre-seeded OpenMRS ------------------
+      - name: Setup pre-seeded OpenMRS
         run: |
-          docker compose up -d --wait
+          mkdir -p preseeded-db
+          if [ ! -f preseeded-db/dump.sql ]; then
+            echo "Downloading pre-seeded database..."
+            curl -sSL -o preseeded-db/dump.sql https://example.com/openmrs-dump.sql
+          fi
 
-      - name: Wait for OpenMRS
-        run: |
+          cat > setup-openmrs.sh <<'EOF'
+          #!/bin/bash
+          set -e
+          DB_VOLUME="db-data"
+          OPENMRS_VOLUME="openmrs-data"
+          COMPOSE_FILE="docker-compose.yml"
+          DB_PORT=3306
+          OPENMRS_PORT=8080
+
+          if [ ! "$(docker volume ls -q -f name=$DB_VOLUME)" ]; then
+            echo "Создаём pre-seeded MariaDB том..."
+            docker volume create $DB_VOLUME
+            docker run --rm \
+              -v $DB_VOLUME:/var/lib/mysql \
+              -v $(pwd)/preseeded-db/dump.sql:/dump.sql \
+              -e MYSQL_ROOT_PASSWORD=openmrs \
+              mariadb:10.11.7 \
+              bash -c "mysqld --initialize-insecure --datadir=/var/lib/mysql && \
+                       mysqld_safe & sleep 10 && \
+                       mysql -uroot -p\$MYSQL_ROOT_PASSWORD openmrs < /dump.sql && \
+                       pkill mysqld"
+          else
+            echo "Том MariaDB уже существует, пропускаем инициализацию"
+          fi
+
+          if [ ! "$(docker volume ls -q -f name=$OPENMRS_VOLUME)" ]; then
+            docker volume create $OPENMRS_VOLUME
+          fi
+
+          echo "Запускаем OpenMRS..."
+          docker compose -f $COMPOSE_FILE up -d
+
+          echo "Ждём пока OpenMRS будет доступен на http://localhost:$OPENMRS_PORT..."
           for i in {1..600}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/openmrs/login.htm || true)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$OPENMRS_PORT/openmrs/spa || true)
             if [ "$STATUS" = "200" ]; then
-              echo "OpenMRS started"
+              echo "OpenMRS готов!"
               exit 0
             fi
             echo "Waiting for OpenMRS..."
             sleep 60
           done
-          echo "OpenMRS failed to start"
+          echo "❌ OpenMRS не запустился"
           exit 1
+          EOF
+
+          chmod +x setup-openmrs.sh
+          ./setup-openmrs.sh
 
       # ------------------ API Tests ------------------
       - name: Run API tests
-        run: mvn test -Dtest=ApiTests
+        run: mvn test -Dtest=api.*Test
 
       - name: Upload API test logs
         uses: actions/upload-artifact@v4
@@ -72,30 +111,14 @@ jobs:
           schemathesis run http://localhost:8080/openmrs/swagger.json
 
       # ------------------ UI Tests ------------------
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: node-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install UI dependencies
-        run: |
-          npm ci
-          npx playwright install --with-deps
-
       - name: Run UI tests
-        run: npx playwright test --workers=4
+        run: mvn test -Dtest=ui.*Test
 
-      - name: Upload Playwright report
+      - name: Upload UI test logs
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: playwright-report
+          name: ui-test-logs
+          path: target/surefire-reports
 
       # ------------------ Allure Report ------------------
       - name: Generate Allure report via Maven
