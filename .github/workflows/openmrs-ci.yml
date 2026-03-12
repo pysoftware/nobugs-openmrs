@@ -39,18 +39,18 @@ jobs:
       # ------------------ Start OpenMRS Docker ------------------
       - name: Start OpenMRS
         run: |
-          docker run -d --name openmrs -p 8080:8080 openmrs/openmrs-reference-application-distro
+          docker compose up -d --wait
 
       - name: Wait for OpenMRS
         run: |
-          for i in {1..60}; do
+          for i in {1..600}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/openmrs/login.htm || true)
             if [ "$STATUS" = "200" ]; then
               echo "OpenMRS started"
               exit 0
             fi
             echo "Waiting for OpenMRS..."
-            sleep 10
+            sleep 60
           done
           echo "OpenMRS failed to start"
           exit 1
