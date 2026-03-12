@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ------------------ Checkout repo ------------------
       - name: Checkout repo
         uses: actions/checkout@v4
 
@@ -36,63 +37,40 @@ jobs:
         run: mvn checkstyle:check
         continue-on-error: true
 
-      # ------------------ Pre-seeded OpenMRS ------------------
-      - name: Setup pre-seeded OpenMRS
+      # ------------------ Prepare DB init ------------------
+      - name: Prepare preseeded DB
         run: |
-          mkdir -p preseeded-db
-          if [ ! -f preseeded-db/dump.sql ]; then
-            echo "Downloading pre-seeded database..."
-            curl -sSL -o preseeded-db/dump.sql https://example.com/openmrs-dump.sql
-          fi
+          mkdir -p db-init
+          
+          # если дамп хранится в репозитории
+          cp preseeded-db/dump.sql db-init/init.sql
 
-          cat > setup-openmrs.sh <<'EOF'
-          #!/bin/bash
-          set -e
-          DB_VOLUME="db-data"
-          OPENMRS_VOLUME="openmrs-data"
-          COMPOSE_FILE="docker-compose.yml"
-          DB_PORT=3306
-          OPENMRS_PORT=8080
+          # если скачивается
+          # curl -L https://example.com/openmrs_dump.sql -o db-init/init.sql
 
-          if [ ! "$(docker volume ls -q -f name=$DB_VOLUME)" ]; then
-            echo "Создаём pre-seeded MariaDB том..."
-            docker volume create $DB_VOLUME
-            docker run --rm \
-              -v $DB_VOLUME:/var/lib/mysql \
-              -v $(pwd)/preseeded-db/dump.sql:/dump.sql \
-              -e MYSQL_ROOT_PASSWORD=openmrs \
-              mariadb:10.11.7 \
-              bash -c "mysqld --initialize-insecure --datadir=/var/lib/mysql && \
-                       mysqld_safe & sleep 10 && \
-                       mysql -uroot -p\$MYSQL_ROOT_PASSWORD openmrs < /dump.sql && \
-                       pkill mysqld"
-          else
-            echo "Том MariaDB уже существует, пропускаем инициализацию"
-          fi
+      # ------------------ Start OpenMRS Docker ------------------
+      - name: Start OpenMRS
+        run: |
+          docker compose up -d
 
-          if [ ! "$(docker volume ls -q -f name=$OPENMRS_VOLUME)" ]; then
-            docker volume create $OPENMRS_VOLUME
-          fi
-
-          echo "Запускаем OpenMRS..."
-          docker compose -f $COMPOSE_FILE up -d
-
-          echo "Ждём пока OpenMRS будет доступен на http://localhost:$OPENMRS_PORT..."
+      # ------------------ Wait for OpenMRS ------------------
+      - name: Wait for OpenMRS
+        run: |
           for i in {1..600}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$OPENMRS_PORT/openmrs/spa || true)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/openmrs/spa/login.htm || true)
+
             if [ "$STATUS" = "200" ]; then
-              echo "OpenMRS готов!"
+              echo "OpenMRS started"
               exit 0
             fi
+
             echo "Waiting for OpenMRS..."
             sleep 60
           done
-          echo "❌ OpenMRS не запустился"
-          exit 1
-          EOF
 
-          chmod +x setup-openmrs.sh
-          ./setup-openmrs.sh
+          echo "OpenMRS failed to start"
+          docker compose logs
+          exit 1
 
       # ------------------ API Tests ------------------
       - name: Run API tests
@@ -104,7 +82,7 @@ jobs:
           name: api-test-logs
           path: target/surefire-reports
 
-      # ------------------ Swagger API coverage (optional) ------------------
+      # ------------------ Swagger API coverage ------------------
       - name: Swagger API coverage
         run: |
           pip install schemathesis
@@ -135,7 +113,7 @@ jobs:
         if: failure()
         run: |
           mkdir -p logs
-          docker logs openmrs > logs/openmrs.log || true
+          docker compose logs > logs/docker.log || true
           ls -la target/surefire-reports >> logs/maven-surefire.txt
 
       - name: Upload logs
