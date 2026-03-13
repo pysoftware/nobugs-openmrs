@@ -41,7 +41,20 @@ jobs:
       - name: Start OpenMRS
         run: |
           docker compose -f docker-compose.yml up -d --wait
-          curl -I http://localhost/openmrs/spa
+
+      - name: Wait for OpenMRS ready
+        run: |
+          for i in {1..600}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/openmrs/spa/login || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "OpenMRS started"
+              exit 0
+            fi
+            echo "Waiting for OpenMRS..."
+            sleep 60
+          done
+          echo "OpenMRS failed to start"
+          exit 1
 
       # ------------------ API Tests ------------------
       - name: Run API tests
