@@ -39,7 +39,7 @@ jobs:
 
       # ------------------ Start OpenMRS with preseeded DB ------------------
       - name: OpenMRS Setup
-        uses: ./.github/actions/openmrs_setup
+        uses: .github/actions/openmrs_setup
 
       # ------------------ API Tests ------------------
       - name: Run API tests
