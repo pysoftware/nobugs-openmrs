@@ -46,12 +46,12 @@ services:
   db:
     image: mariadb:10.11.7
     restart: "unless-stopped"
-    command: "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --innodb-buffer-pool-size=512M"
+    command: "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --innodb-buffer-pool-size=2G"
     healthcheck:
       test: "mysql --user=${OMRS_DB_USER:-openmrs} --password=${OMRS_DB_PASSWORD:-openmrs} --execute \"SHOW DATABASES;\""
-      interval: 5s
-      timeout: 3s
-      retries: 20
+      interval: 3s
+      timeout: 1s
+      retries: 5
     environment:
       MYSQL_DATABASE: openmrs
       MYSQL_USER: ${OMRS_DB_USER:-openmrs}
@@ -59,7 +59,6 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-openmrs}
     volumes:
       - db-data:/var/lib/mysql
-      #- ./db-init:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"
 
