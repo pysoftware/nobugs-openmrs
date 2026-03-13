@@ -38,10 +38,8 @@ jobs:
         continue-on-error: true
 
       # ------------------ Start OpenMRS with preseeded DB ------------------
-      - name: Start OpenMRS
-        run: |
-          docker compose -f docker-compose.yml up -d --wait
-          curl -I http://localhost/openmrs/spa
+      - name: OpenMRS Setup
+        uses: ./.github/actions/openmrs.yml
 
       # ------------------ API Tests ------------------
       - name: Run API tests
