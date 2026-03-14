@@ -8,5 +8,24 @@ runs:
       shell: bash
       run: |
         docker compose up -d --wait
-        echo "Waiting for OpenMRS SPA to load (up to 10 hours)..."
-        node .github/actions/wait-for-openmrs-session.js
+
+    - name: Wait for OpenMRS backend
+      shell: bash
+      run: |
+        echo "Waiting for OpenMRS backend to be ready..."
+      
+        for i in {1..600}; do
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/openmrs/ws/rest/v1/session || true)
+      
+          echo "Attempt $i - HTTP status: $STATUS"
+      
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ OpenMRS backend is ready"
+            exit 0
+          fi
+      
+          sleep 60
+        done
+      
+        echo "❌ OpenMRS failed to start in time"
+        exit 1
