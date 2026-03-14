@@ -8,7 +8,7 @@ public class PlaywrightConfiguration {
     public static String basePath;
     public static String browser       = "chrome";
     public static String browserSize   = "1920x1080";
-    public static boolean headless     = true;
+    public static boolean headless     = false;
 
     // Инициализация из properties — вызывается один раз в @BeforeAll
     public static void loadFromProperties() {
