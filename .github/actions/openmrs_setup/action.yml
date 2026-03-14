@@ -9,4 +9,4 @@ runs:
       run: |
         docker compose up -d --wait
         echo "Waiting for OpenMRS SPA to load (up to 10 hours)..."
-        node .github/actions/wait-for-openmrs.js http://localhost/openmrs/spa/login $((10*60*60*1000))
+        node .github/actions/wait-for-openmrs-session.js

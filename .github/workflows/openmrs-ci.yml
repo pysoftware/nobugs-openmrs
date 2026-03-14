@@ -38,17 +38,17 @@ jobs:
         continue-on-error: true
 
       # ------------------ Setup Node.js & Playwright ------------------
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-
-      - name: Install Playwright
-        run: |
-          cd .github/actions
-          npm init -y
-          npm install playwright
-          npx playwright install
+#      - name: Setup Node.js
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: 20
+#
+#      - name: Install Playwright
+#        run: |
+#          cd .github/actions
+#          npm init -y
+#          npm install playwright
+#          npx playwright install
 
       # ------------------ Start OpenMRS ------------------------------------
       - name: OpenMRS Setup
