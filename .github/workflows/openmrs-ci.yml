@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - ci_cd
   pull_request:
   workflow_dispatch:
 
@@ -36,27 +35,13 @@ jobs:
       - name: Checkstyle
         run: mvn checkstyle:check
         continue-on-error: true
-
-      # ------------------ Setup Node.js & Playwright ------------------
-#      - name: Setup Node.js
-#        uses: actions/setup-node@v3
-#        with:
-#          node-version: 20
-#
-#      - name: Install Playwright
-#        run: |
-#          cd .github/actions
-#          npm init -y
-#          npm install playwright
-#          npx playwright install
-
       # ------------------ Start OpenMRS ------------------------------------
       - name: OpenMRS Setup
         uses: ./.github/actions/openmrs_setup
 
       # ------------------ API Tests ------------------
       - name: Run API tests
-        run: mvn test -Dtest=api.*Test
+        run: mvn test -Dtest=api.**.*Test
 
       - name: Upload API test logs
         uses: actions/upload-artifact@v4
@@ -72,7 +57,7 @@ jobs:
 
       # ------------------ UI Tests ------------------
       - name: Run UI tests
-        run: mvn test -Dtest=ui.*Test
+        run: mvn test -Dtest=ui.**.*Test
 
       - name: Upload UI test logs
         uses: actions/upload-artifact@v4
