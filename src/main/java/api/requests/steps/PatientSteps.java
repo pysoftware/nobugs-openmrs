@@ -1,6 +1,7 @@
 package api.requests.steps;
 
 import api.generators.RandomModelGenerator;
+import api.generators.annotations.openmrs.OpenmrsIdGenerator;
 import api.models.*;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.CrudRequester;
@@ -16,6 +17,10 @@ import java.util.Map;
 public class PatientSteps {
     public static PatientResponse createPatient() {
         PatientIdentifierTypeResponse patientIdentifierType = PatientIdentifierTypeSteps.createPatientIdentifierType();
+        List<PatientIdentifierTypeResponse> patientIdentifierTypegetRequiredList =
+                PatientIdentifierTypeSteps.getPatientIdentifierTypeList().stream()
+                        .filter(PatientIdentifierTypeResponse::getRequired)
+                        .toList();
         SessionStorage.add(patientIdentifierType);
         LocationResponse location = LocationSteps.createLocation();
         SessionStorage.add(location);
@@ -26,6 +31,11 @@ public class PatientSteps {
                                 identifier.setIdentifierType(patientIdentifierType.getUuid());
                                 identifier.setLocation(location.getUuid());
                                 identifier.setPreferred(false);
+                            }
+                            for (PatientIdentifierTypeResponse identifier : patientIdentifierTypegetRequiredList) {
+                                fields.getIdentifiers().add(new IdentifierRequest(
+                                        OpenmrsIdGenerator.generateOpenmrsId(), identifier.getUuid(), location.getUuid(), true)
+                                );
                             }
                             Person person = fields.getPerson();
                             person.setDead(false);
