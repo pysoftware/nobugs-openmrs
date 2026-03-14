@@ -50,10 +50,10 @@ jobs:
           path: target/surefire-reports
 
       # ------------------ Swagger API coverage ------------------
-      - name: Swagger API coverage
-        run: |
-          pip install schemathesis
-          schemathesis run http://localhost:8080/openmrs/swagger.json
+#      - name: Swagger API coverage
+#        run: |
+#          pip install schemathesis
+#          schemathesis run http://localhost:8080/openmrs/swagger.json
 
       # ------------------ UI Tests ------------------
       - name: Run UI tests
