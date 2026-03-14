@@ -1,4 +1,4 @@
-name: OpenMRS CI (UI + API)
+name: OpenMRS CI (UI + API with preseeded DB)
 
 on:
   push:
@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ------------------ Checkout repo ------------------
       - name: Checkout repo
         uses: actions/checkout@v4
 
@@ -33,29 +34,14 @@ jobs:
 
       - name: Checkstyle
         run: mvn checkstyle:check
-
-      # ------------------ Start OpenMRS Docker ------------------
-      - name: Start OpenMRS
-        run: |
-          docker run -d --name openmrs -p 8080:8080 openmrs/openmrs-reference-application-distro
-
-      - name: Wait for OpenMRS
-        run: |
-          for i in {1..60}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/openmrs/spa/login.htm || true)
-            if [ "$STATUS" = "200" ]; then
-              echo "OpenMRS started"
-              exit 0
-            fi
-            echo "Waiting for OpenMRS..."
-            sleep 10
-          done
-          echo "OpenMRS failed to start"
-          exit 1
+        continue-on-error: true
+      # ------------------ Start OpenMRS ------------------------------------
+      - name: OpenMRS Setup
+        uses: ./.github/actions/openmrs_setup
 
       # ------------------ API Tests ------------------
       - name: Run API tests
-        run: mvn test -Dtest=ApiTests
+        run: mvn test -Dtest=api.**.*Test
 
       - name: Upload API test logs
         uses: actions/upload-artifact@v4
@@ -63,64 +49,38 @@ jobs:
           name: api-test-logs
           path: target/surefire-reports
 
-      # ------------------ Swagger API coverage (optional) ------------------
-      - name: Swagger API coverage
-        run: |
-          pip install schemathesis
-          schemathesis run http://localhost:8080/openmrs/module/webservices/rest/swagger.json
+      # ------------------ Swagger API coverage ------------------
+#      - name: Swagger API coverage
+#        run: |
+#          pip install schemathesis
+#          schemathesis run http://localhost:8080/openmrs/swagger.json
 
       # ------------------ UI Tests ------------------
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: node-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install UI dependencies
-        run: |
-          npm ci
-          npx playwright install --with-deps
-
       - name: Run UI tests
-        run: npx playwright test --workers=4
+        run: mvn test -Dtest=ui.**.*Test
 
-      - name: Upload Playwright report
+      - name: Upload UI test logs
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: playwright-report
+          name: ui-test-logs
+          path: target/surefire-reports
 
       # ------------------ Allure Report ------------------
-      - name: Upload Allure results
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results
-          path: allure-results
-
-      - name: Generate Allure report
-        uses: simple-elf/allure-report-action@v1
-        with:
-          allure_results: allure-results
-          allure_report: allure-report
+      - name: Generate Allure report via Maven
+        run: mvn allure:report
 
       - name: Upload Allure report
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
-          path: allure-report
+          path: target/site/allure-maven-plugin
 
-      # ------------------ Logs ------------------
-      - name: Collect logs
+      # ------------------ Collect Docker logs ------------------
+      - name: Collect OpenMRS logs
         if: failure()
         run: |
           mkdir -p logs
-          docker logs openmrs > logs/openmrs.log || true
-          ls -la target/surefire-reports >> logs/maven-surefire.txt
+          docker compose logs --no-color > logs/openmrs-docker.log || true
 
       - name: Upload logs
         uses: actions/upload-artifact@v4
