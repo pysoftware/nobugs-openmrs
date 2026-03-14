@@ -37,8 +37,10 @@ public class BaseUiTest extends BaseTest {
             default -> playwright.chromium();
         };
 
+        boolean headless = System.getenv("CI") != null;
+
         BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
-                .setHeadless(PlaywrightConfiguration.headless);
+                .setHeadless(headless && PlaywrightConfiguration.headless);
 
         if (browserType == playwright.chromium()) {
             String channel = getBrowserChannel(PlaywrightConfiguration.browser);
