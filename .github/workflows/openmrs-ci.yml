@@ -37,7 +37,16 @@ jobs:
         run: mvn checkstyle:check
         continue-on-error: true
 
-      # ------------------ Start OpenMRS with preseeded DB ------------------
+      # ------------------ Install Node.js & Playwright ------------------
+      - name: Setup Node.js and Playwright
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - run: |
+          npm init -y
+          npm install playwright
+
+      # ------------------ Start OpenMRS ------------------------------------
       - name: OpenMRS Setup
         uses: ./.github/actions/openmrs_setup
 
