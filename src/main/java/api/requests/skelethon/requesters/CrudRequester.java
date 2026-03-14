@@ -6,6 +6,7 @@ import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.HttpRequest;
 import api.requests.skelethon.interfaces.CrudEndpointInterface;
 import api.requests.skelethon.interfaces.GetAllEndpointInterface;
+import common.storage.SessionStorage;
 import io.restassured.http.Method;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
@@ -84,12 +85,13 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
 
     @Override
     public Object delete(boolean purge, String... uuid) {
+        SessionStorage.delete(uuid[0]);
+
         RequestSpecification spec = given().spec(requestSpecification);
         if (purge) spec.queryParams(Map.<String, Object>of("purge", purge));
 
         RequestParams params = buildParams(uuid);
         spec.pathParams(params.pathParams());
-
         return execute(Method.DELETE, spec, params.path());
     }
 

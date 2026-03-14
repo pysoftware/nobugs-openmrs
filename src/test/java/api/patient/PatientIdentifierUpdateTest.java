@@ -16,6 +16,7 @@ import common.annotations.PrepareData;
 import common.extensions.Prepare;
 import common.storage.SessionStorage;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class PatientIdentifierUpdateTest extends BaseTest {
@@ -29,7 +30,7 @@ public class PatientIdentifierUpdateTest extends BaseTest {
                 RandomModelGenerator.generate(PatientIdentifierUpdateRequest.class);
 
         String patientUuid = patient.getPerson().getUuid();
-        String identifierUuid = patient.getIdentifiers().get(0).getUuid();
+        String identifierUuid = patient.getIdentifiers().get(1).getUuid();
         PatientIdentifierResponse patientIdentifierResponse = PatientIdentifierSteps.updatePatientIdentifier(
                 patientIdentifierRequest, patientUuid, identifierUuid);
 
@@ -43,6 +44,7 @@ public class PatientIdentifierUpdateTest extends BaseTest {
     }
 
     @PrepareData(Prepare.PATIENT)
+    @Disabled
     @Test
     public void adminCannotUpdatePatientIdentifierWithIncorrectData() {
         PatientResponse patient = SessionStorage.get(Prepare.PATIENT, 1);

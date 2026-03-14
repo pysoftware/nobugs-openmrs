@@ -39,6 +39,30 @@ public class SessionStorage {
         typeMap.put(model.getUuid(), model);
     }
 
+    public static void delete(String uuid) {
+        if (uuid == null) {
+            return;
+        }
+
+        SessionStorage storage = INSTANCE.get();
+
+        Iterator<Map.Entry<Prepare, Map<String, HasUuid>>> iterator =
+                storage.entitiesByType.entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            Map.Entry<Prepare, Map<String, HasUuid>> entry = iterator.next();
+
+            Map<String, HasUuid> typeMap = entry.getValue();
+
+            if (typeMap.remove(uuid) != null) {
+                if (typeMap.isEmpty()) {
+                    iterator.remove(); // удаляем пустой тип
+                }
+                break;
+            }
+        }
+    }
+
     /**
      * Получить сущность по типу и номеру (индекс начинается с 1)
      */

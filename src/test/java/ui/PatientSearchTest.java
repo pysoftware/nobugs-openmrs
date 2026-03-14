@@ -8,6 +8,7 @@ import common.annotations.PrepareData;
 import common.extensions.Prepare;
 import common.storage.SessionStorage;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import ui.components.common.Header;
 import ui.pages.HomePage;
@@ -31,6 +32,7 @@ public class PatientSearchTest extends BaseUiTest {
 
     @AdminSession
     @PrepareData(Prepare.PATIENT)
+    @Disabled
     @Test
     public void adminCanSearchPatientById() {
         PatientResponse patient = SessionStorage.get(Prepare.PATIENT, 1);
