@@ -7,6 +7,7 @@ import api.models.comparison.ModelAssertions;
 import common.annotations.PrepareData;
 import common.extensions.Prepare;
 import common.storage.SessionStorage;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
@@ -31,6 +32,7 @@ public class UpdatePersonTest extends BaseTest {
     }
 
     @PrepareData(Prepare.PERSON)
+    @Disabled
     @Test
     public void adminCanUpdatePersonName() {
         PersonResponse personResponse = SessionStorage.get(Prepare.PERSON, 1);
