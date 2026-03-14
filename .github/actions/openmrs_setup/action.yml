@@ -9,10 +9,4 @@ runs:
       run: |
         docker compose up -d --wait
         echo "Waiting for OpenMRS SPA to load (up to 10 hours)..."
-
-        # Запускаем Node.js скрипт через npx playwright, чтобы дождаться поля username
-        npx playwright wait-for-selector "input[name='username']" \
-          --timeout $((10*60*60*1000)) \
-          --url http://localhost/openmrs/spa
-
-        echo "OpenMRS SPA is ready!"
+        node .github/actions/wait-for-openmrs.js http://localhost/openmrs/spa $((10*60*60*1000))
