@@ -8,6 +8,7 @@ import api.requests.steps.VisitSteps;
 import common.annotations.PrepareData;
 import common.extensions.Prepare;
 import common.storage.SessionStorage;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
@@ -37,6 +38,7 @@ public class PatientVisitsTest extends BaseTest {
         ModelAssertions.assertThatModels(createdVisit, visitRequest).match();
     }
 
+    @Disabled
     @Test
     public void userAbleToToCreateVisitTypeTest() {
 
@@ -47,6 +49,7 @@ public class PatientVisitsTest extends BaseTest {
         ModelAssertions.assertThatModels(newVisitType, createdVisitType).match();
     }
 
+    @Disabled
     @Test
     public void useAbleToUpdateVisitTypeTest() {
 

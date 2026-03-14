@@ -26,6 +26,10 @@ public class PatientCreateTest extends BaseTest {
     @Test
     public void adminCanCreatePatientWithCorrectData() {
         PatientIdentifierTypeResponse patientIdentifierType = SessionStorage.get(Prepare.PATIENT_IDENTIFIER_TYPE, 1);
+        List<PatientIdentifierTypeResponse> patientIdentifierTypegetRequiredList =
+                PatientIdentifierTypeSteps.getPatientIdentifierTypeList().stream()
+                        .filter(PatientIdentifierTypeResponse::getRequired)
+                        .toList();
         LocationResponse location = SessionStorage.get(Prepare.LOCATION, 1);
 
         PatientCreateNewRequest patientRequest =
@@ -35,6 +39,11 @@ public class PatientCreateTest extends BaseTest {
                                 identifier.setIdentifierType(patientIdentifierType.getUuid());
                                 identifier.setLocation(location.getUuid());
                                 identifier.setPreferred(false);
+                            }
+                            for (PatientIdentifierTypeResponse identifier : patientIdentifierTypegetRequiredList) {
+                                fields.getIdentifiers().add(new IdentifierRequest(
+                                        OpenmrsIdGenerator.generateOpenmrsId(), identifier.getUuid(), location.getUuid(), true)
+                                );
                             }
                             Person person = fields.getPerson();
                             person.setDead(false);
